@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jackyjjc.Bayesianet;
 
-public class GameManager : MonoBehaviour {
+public class GameManagerBayesian : MonoBehaviour {
 
     private VariableElimination ve;
 	// Use this for initialization
