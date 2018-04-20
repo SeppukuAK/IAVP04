@@ -28,15 +28,15 @@ public class TileView : MonoBehaviour
         switch (GameManager.Instance.State)
         {
             case SceneState.SETHERO:
-                    GameManager.Instance.SetHero(tile.Pos);
+                    //GameManager.Instance.SetHero(tile.Pos);
                 break;
 
             case SceneState.SETALLY:
-                    GameManager.Instance.SetAlly(tile.Pos);
+                   // GameManager.Instance.SetAlly(tile.Pos);
                     break;
 
             case SceneState.SETENEMY:
-                    GameManager.Instance.SetEnemy(tile.Pos);
+                   // GameManager.Instance.SetEnemy(tile.Pos);
                     break;
 
 
