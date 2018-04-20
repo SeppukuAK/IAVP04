@@ -23,23 +23,24 @@ public class TileView : MonoBehaviour
     private void OnMouseDown()
     {
         //Se comprueba que en la casilla donde se ha hecho click no está el refugio
-        if (!GameManager.Instance.Refuge.Equals(tile.Pos)) 
-
-        switch (GameManager.Instance.State)
+        if (!GameManager.Instance.Refuge.Equals(tile.Pos))
         {
-            case SceneState.SETHERO:
+            switch (GameManager.Instance.State)
+            {
+                case SceneState.SETHERO:
                     //GameManager.Instance.SetHero(tile.Pos);
-                break;
-
-            case SceneState.SETALLY:
-                   // GameManager.Instance.SetAlly(tile.Pos);
                     break;
 
-            case SceneState.SETENEMY:
-                   // GameManager.Instance.SetEnemy(tile.Pos);
+                case SceneState.SETALLY:
+                    // GameManager.Instance.SetAlly(tile.Pos);
+                    break;
+
+                case SceneState.SETENEMY:
+                    // GameManager.Instance.SetEnemy(tile.Pos);
                     break;
 
 
+            }
         }
 
     }

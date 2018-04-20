@@ -27,9 +27,6 @@ public class Board
         }
     }
 
-    
-  
-
     /*
     public void SetHero(int x, int y)
     {
@@ -37,9 +34,6 @@ public class Board
         GameManager.Instance.SetSpriteHero(x, y);
     }
     */
-
-
-
 }
 
 

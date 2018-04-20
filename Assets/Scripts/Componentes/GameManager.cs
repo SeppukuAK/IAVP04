@@ -6,46 +6,55 @@ using Jackyjjc.Bayesianet;
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
 /// </summary>
-public enum SceneState {SETHERO, SETALLY,SETENEMY}
+public enum SceneState { SETHERO, SETALLY, SETENEMY,NULL }
 
-public class GameManager : MonoBehaviour {
-
+public class GameManager : MonoBehaviour
+{
     /// <summary>
     /// Singleton
     /// </summary>
-    public static GameManager Instance;
+    public static GameManager Instance = null;
 
-    public GameObject tilePrefab;
-    public GameObject refugePrefab;
+    //------------------CONSTANTES-------------------
 
-   // private GameObject heroGO;
-
-
-    //CONSTANTES
     public const int WIDTH = 12;
     public const int HEIGHT = 6;
     public const float DISTANCE = 0.64f;
 
+    //------------------CONSTANTES-------------------
 
+    //------------------INSPECTOR-------------------
+    public GameObject TilePrefab;
+
+    // private GameObject heroGO;
+    //------------------INSPECTOR-------------------
+
+    //------------------PROPIEDADES-------------------
     /// <summary>
     /// Estado actual del juego
     /// </summary>
     public SceneState State { get; set; }
 
+
+    /// <summary>
+    /// Posición del refugio
+    /// </summary>
+    public Pos Refuge { get; set; }
+    //------------------PROPIEDADES-------------------
+
+
+    //----------------ATRIBUTOS PRIVADOS------------------
     /// <summary>
     /// Tablero
     /// </summary>
     private Board board;
 
     /// <summary>
-    /// Posición del refugio
-    /// </summary>
-    public Pos Refuge { get; set; }
-
-    /// <summary>
     /// Matriz de GO tiles
     /// </summary>
-    private GameObject[,] TileMatrix { get; set; }
+    private GameObject[,] tileMatrix { get; set; }
+    //----------------ATRIBUTOS PRIVADOS------------------
+
 
     private void Awake()
     {
@@ -54,9 +63,9 @@ public class GameManager : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
-        //Lo primero que se coloca es el heroe
-        State = SceneState.SETHERO;
+    void Start()
+    {
+        State = SceneState.NULL;
 
         //Referente a la Red Bayesiana
         /*
@@ -69,39 +78,40 @@ public class GameManager : MonoBehaviour {
         Debug.Log("Probability of value1: " + probability[0]);
         Debug.Log("Probability of value2: " + probability[1]);
         */
-        TileMatrix = new GameObject[HEIGHT, WIDTH];
+
         board = new Board();
 
         //Se genera el tablero
         SetSceneBoard();
+
+        State = SceneState.SETHERO;
     }
 
-  
+
     /// <summary>
     /// Método que coloca la representación lógica del tablero a la representación física
     /// </summary>
     void SetSceneBoard()
     {
+        tileMatrix = new GameObject[HEIGHT, WIDTH];
+
         GameObject GOBoard = new GameObject("Board");
 
-        for (int y = 0; y < GameManager.HEIGHT; y++)
+        for (int y = 0; y < HEIGHT; y++)
         {
-            for (int x = 0; x < GameManager.WIDTH; x++)
+            for (int x = 0; x < WIDTH; x++)
             {
                 //Creamos los Game Object del tablero
-                TileMatrix[y, x] = Instantiate(tilePrefab, new Vector3(x * DISTANCE, -y * DISTANCE, 0), Quaternion.identity, GOBoard.transform);
+                tileMatrix[y, x] = Instantiate(TilePrefab, new Vector3(x * DISTANCE, -y * DISTANCE, 0), Quaternion.identity, GOBoard.transform);
 
                 Tile tileAux = board.Matrix[y, x];
 
                 //Construimos la casilla
-                TileMatrix[y, x].GetComponent<TileView>().BuildTile(tileAux);
+                tileMatrix[y, x].GetComponent<TileView>().BuildTile(tileAux);
             }
 
         }
-        //Fijamos la posición del refugio
-        Refuge = new Pos(6, 0);
 
-        GameObject GOrefuge = Instantiate(refugePrefab, new Vector3(Refuge.X * DISTANCE, -Refuge.Y * DISTANCE, 0), Quaternion.identity);
     }
 
     /*
@@ -112,9 +122,9 @@ public class GameManager : MonoBehaviour {
 
         //Instanciamos el héroe
 
-        
+
     }
-    
+
     public void SetAlly()
     {
 
