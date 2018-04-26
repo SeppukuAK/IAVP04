@@ -6,7 +6,7 @@ using Jackyjjc.Bayesianet;
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
 /// </summary>
-public enum SceneState { SETHERO, SETALLY, SETENEMY,NULL }
+public enum SceneState { SETHERO, SETMAP,NULL }
 
 public class GameManager : MonoBehaviour
 {
@@ -25,6 +25,9 @@ public class GameManager : MonoBehaviour
 
     //------------------INSPECTOR-------------------
     public GameObject TilePrefab;
+    public GameObject HeroPrefab;
+    public GameObject AllyPrefab;
+    public GameObject EnemyPrefab;
 
     // private GameObject heroGO;
     //------------------INSPECTOR-------------------
@@ -47,12 +50,13 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Tablero
     /// </summary>
-    private Board board;
+    public Board Board;
 
     /// <summary>
     /// Matriz de GO tiles
     /// </summary>
     private GameObject[,] tileMatrix { get; set; }
+    public Dictionary<Pos, List<GameObject>> personajes;
     //----------------ATRIBUTOS PRIVADOS------------------
 
 
@@ -79,10 +83,12 @@ public class GameManager : MonoBehaviour
         Debug.Log("Probability of value2: " + probability[1]);
         */
 
-        board = new Board();
+        Board = new Board();
 
         //Se genera el tablero
         SetSceneBoard();
+
+        Refuge = new Pos(0, 5);
 
         State = SceneState.SETHERO;
     }
@@ -104,7 +110,7 @@ public class GameManager : MonoBehaviour
                 //Creamos los Game Object del tablero
                 tileMatrix[y, x] = Instantiate(TilePrefab, new Vector3(x * DISTANCE, -y * DISTANCE, 0), Quaternion.identity, GOBoard.transform);
 
-                Tile tileAux = board.Matrix[y, x];
+                Tile tileAux = Board.Matrix[y, x];
 
                 //Construimos la casilla
                 tileMatrix[y, x].GetComponent<TileView>().BuildTile(tileAux);
@@ -114,24 +120,48 @@ public class GameManager : MonoBehaviour
 
     }
 
-    /*
-    public void SetHero(Pos pos)
+    
+    public void CreateHero(Hero hero)
     {
+        Pos pos = hero.Tile.Pos;
+        GameObject heroGO = Instantiate(HeroPrefab, new Vector3(pos.X* DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
+        
+        //No puede haber nada antes del héroe
+        List<GameObject> listaPersonajes = new List<GameObject>();
+        listaPersonajes.Add(heroGO);
+        personajes.Add(pos, listaPersonajes);    
+        
+        HeroView heroView = heroGO.GetComponent<HeroView>();
+        heroView.BuildHero(hero);
+
+        State = SceneState.SETMAP;
+
         //Añadimos la posicion del heroe a la matriz lógica
-        board.SetHero(pos.X, pos.Y);
+        //board.SetHero(pos.X, pos.Y);
 
         //Instanciamos el héroe
-
-
     }
 
-    public void SetAlly()
+    public void CreateAlly(Ally ally)
     {
+        Pos pos = ally.Tile.Pos;
+        GameObject allyGO = Instantiate(AllyPrefab, new Vector3(pos.X * DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
+
+        List<GameObject> listaPersonajes = new List<GameObject>();
+        listaPersonajes.Add(allyGO);
+        personajes.Add(pos, listaPersonajes);
+        AllyView allyView = allyGO.GetComponent<AllyView>();
+        allyView.BuildAlly(ally);
+
 
     }
-    public void SetEnemy()
+    public void CreateEnemy(Enemy enemy)
     {
+        Pos pos = enemy.Tile.Pos;
+        GameObject heroGO = Instantiate(AllyPrefab, new Vector3(pos.X * DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
 
+        EnemyView enemyView = heroGO.GetComponent<EnemyView>();
+        enemyView.BuildEnemy(enemy);
     }
-    */
+
 }

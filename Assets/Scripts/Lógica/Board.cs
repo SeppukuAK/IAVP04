@@ -6,8 +6,11 @@
 /// </summary>
 public class Board
 {
+    public int NumAllies;
+    public int NumEnemies;
+
     //Representación del tablero
-    public Tile[,] Matrix { get; set; }
+    public Tile[,] Matrix;
 
     /// <summary>
     /// Inicializa la matriz a Tiles genéricos
@@ -25,6 +28,8 @@ public class Board
 
             }
         }
+
+        NumAllies = NumEnemies = 0;
     }
 
     /*
