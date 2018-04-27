@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class Enemy
+public class Enemy : MonoBehaviour
 {
 
-    public Tile Tile;
-    public Enemy(Tile tile)
+    public Tile Tile { get; set; }
+
+    public void BuildEnemy(Tile tile)
     {
         Tile = tile;
     }
-
 
     public void NextStep()
     {

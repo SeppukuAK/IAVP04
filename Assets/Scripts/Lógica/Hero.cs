@@ -1,13 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Hero  {
-
-    public Tile Tile { get; set; }
-
-    public Hero(Tile tile)
+﻿
+public class Hero : Ally
+{
+    public override void NextStep()
     {
-        Tile = tile;
+
     }
 }

@@ -28,6 +28,8 @@ public class GameManager : MonoBehaviour
     //------------------CONSTANTES-------------------
 
     //------------------INSPECTOR-------------------
+    public Board Map;
+
     public GameObject TilePrefab;
     public GameObject HeroPrefab;
     public GameObject AllyPrefab;
@@ -45,40 +47,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public SceneState State { get; set; }
 
-    /// <summary>
-    /// Posición del refugio
-    /// </summary>
-    public Pos Refuge { get; set; }
-
-    /// <summary>
-    /// Referencia al Heroe
-    /// </summary>
-    public HeroView Hero { get; set; }
-
-    public List<AllyView> Allies { get; set; }
-
-    public List<EnemyView> Enemies { get; set; }
-
-    public bool LightOn { get; set; }
-
     //------------------PROPIEDADES-------------------
 
 
     //----------------ATRIBUTOS PRIVADOS------------------
-    /// <summary>
-    /// Tablero
-    /// </summary>
-    public Board Board;
-
-    /// <summary>
-    /// Matriz de GO tiles
-    /// </summary>
-    private GameObject[,] tileMatrix { get; set; }
-
-    /// <summary>
-    /// Diccionario que guarda todas las posiciones ocupadas por barcos y todos los barcos en esas posiciones
-    /// </summary>
-    public Dictionary<Pos, List<GameObject>> Boats;
 
     //----------------ATRIBUTOS PRIVADOS------------------
 
@@ -86,68 +58,20 @@ public class GameManager : MonoBehaviour
     {
         //GameManager es Singleton
         Instance = this;
+
+        ButtonPlay.gameObject.SetActive(false);
     }
 
     // Use this for initialization
     void Start()
     {
-        ButtonPlay.gameObject.SetActive(false);
         State = SceneState.NULL;
 
-        LightOn = true;
-
-        //Referente a la Red Bayesiana
-        /*
-        BayesianNode node1 = new BayesianNode("node1", new string[] { "value1", "value2" }, new double[] { 0.4, 0.6 });
-        BayesianNode node2 = new BayesianNode("node2", new string[] { "v1", "v2","v3" }, new double[] { 0.1,0.2,0.7,0.2, 0.6,0.2 },node1);
-        BayesianNetwork network = new BayesianNetwork(node1, node2);
-        VariableElimination ve = new VariableElimination(network);
-
-        double[] probability = ve.Infer("node1", "node2=v1");
-        Debug.Log("Probability of value1: " + probability[0]);
-        Debug.Log("Probability of value2: " + probability[1]);
-        */
-
-        Board = new Board();
-
         //Se genera el tablero
-        SetSceneBoard();
-
-        Refuge = new Pos(0, 5);
+        Map.BuildMap();
 
         State = SceneState.SETHERO;
-
-        Boats = new Dictionary<Pos, List<GameObject>>();
-        Enemies = new List<EnemyView>();
     }
-
-
-    /// <summary>
-    /// Método que coloca la representación lógica del tablero a la representación física
-    /// </summary>
-    void SetSceneBoard()
-    {
-        tileMatrix = new GameObject[HEIGHT, WIDTH];
-
-        GameObject GOBoard = new GameObject("Board");
-
-        for (int y = 0; y < HEIGHT; y++)
-        {
-            for (int x = 0; x < WIDTH; x++)
-            {
-                //Creamos los Game Object del tablero
-                tileMatrix[y, x] = Instantiate(TilePrefab, new Vector3(x * DISTANCE, -y * DISTANCE, 0), Quaternion.identity, GOBoard.transform);
-
-                Tile tileAux = Board.Matrix[y, x];
-
-                //Construimos la casilla
-                tileMatrix[y, x].GetComponent<TileView>().BuildTile(tileAux);
-            }
-
-        }
-
-    }
-
 
     public void InitGame()
     {
@@ -166,10 +90,10 @@ public class GameManager : MonoBehaviour
     {
         while (State == SceneState.PLAY)
         {
-            for (int i = 0; i < Enemies.Count; i++)
-                Enemies[i].NextStep();
+            for (int i = 0; i < Map.Enemies.Count; i++)
+                Map.Enemies[i].NextStep();
 
-            Hero.NextStep();
+            Map.Hero.NextStep();
             yield return new WaitForSeconds(1.0f);
         }
     }
@@ -177,22 +101,22 @@ public class GameManager : MonoBehaviour
     public void OnOffLight()
     {
 
-        if (LightOn)
+        if (Map.LightOn)
         {
             AmbientLight.enabled = false;
-            LightOn = false;
+            Map.LightOn = false;
 
-            if (Hero != null)
-                Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
+            if (Map.Hero != null)
+                Map.Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
 
         }
         else
         {
             AmbientLight.enabled = true;
-            LightOn = true;
+            Map.LightOn = true;
 
-            if (Hero != null)
-                Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
+            if (Map.Hero != null)
+                Map.Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
         }
 
     }
@@ -204,14 +128,14 @@ public class GameManager : MonoBehaviour
     /// <returns></returns>
     public Ally GetNearestAlly(Enemy enemy)
     {
-        Ally ally = Allies[0].Ally;
-        int minDistance = enemy.Tile.Pos.ManhattanDistance(Allies[0].Ally.Tile.Pos);
-        for(int i = 1; i < Allies.Count; i++)
+        Ally ally = Map.Allies[0];
+        int minDistance = enemy.Tile.Pos.ManhattanDistance(Map.Allies[0].Tile.Pos);
+        for(int i = 1; i < Map.Allies.Count; i++)
         {
-            int distance = enemy.Tile.Pos.ManhattanDistance(Allies[i].Ally.Tile.Pos);
+            int distance = enemy.Tile.Pos.ManhattanDistance(Map.Allies[i].Tile.Pos);
             if (distance < minDistance)
             {
-                ally = Allies[i].Ally;
+                ally = Map.Allies[i];
             }
         }
 

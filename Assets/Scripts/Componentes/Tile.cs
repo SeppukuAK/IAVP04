@@ -7,27 +7,30 @@ using UnityEngine;
 /// Representación lógica de las casillas. Guardan toda la información contenida en ella
 /// Componente asociado a los gameObject Tile, guarda la representación lógica de estos e informa al GameManager cuando son pulsados con el ratón
 /// </summary>
-public class TileView : MonoBehaviour
+public class Tile : MonoBehaviour
 {
     /// <summary>
     /// Posición lógica del tile
     /// </summary>
-    private Tile tile;
+    public Pos Pos { get; set; }
 
-    public AllyView AllyView { get; set; }
-    public HeroView HeroView { get; set; }
-    public List<EnemyView> EnemyView { get; set; }
+    public Ally Ally { get; set; }
+    public Hero Hero { get; set; }
+    public List<Enemy> Enemy { get; set; }
 
-    public void BuildTile(Tile tile)
+
+    public void BuildTile(Pos pos)
     {
-        this.tile = tile;
-        EnemyView = new List<EnemyView>();
+        Pos = pos;
+        Hero = null;
+        Ally = null;
+        Enemy = new List<Enemy>();
     }
 
     private void OnMouseDown()
     {
         //Se comprueba que en la casilla donde se ha hecho click no está el refugio
-        if (!GameManager.Instance.Refuge.Equals(tile.Pos))
+        if (!GameManager.Instance.Map.Refuge.Equals(Pos))
         {
             switch (GameManager.Instance.State)
             {
@@ -37,17 +40,17 @@ public class TileView : MonoBehaviour
 
                 case SceneState.SETMAP:
                     //Distinguir entre que tengo que poner
-                    if (tile.Hero == null)
+                    if (Hero == null)
                     {
                         //Si no hay nada 
-                        if (tile.Ally == null && tile.Enemy.Count == 0)
+                        if (Ally == null && Enemy.Count == 0)
                         {
                             //hay menos de 5 aliados, pongo un aliado
-                            if (GameManager.Instance.Board.NumAllies < GameManager.MAXALLIES)
+                            if (GameManager.Instance.Map.Allies.Count < GameManager.MAXALLIES)
                                 CreateAlly();
 
                             //hay más de 5 aliados, y menos de 20 enemigos, pongo un enemigo
-                            else if (GameManager.Instance.Board.NumEnemies < GameManager.MAXENEMIES)
+                            else if (GameManager.Instance.Map.Enemies.Count < GameManager.MAXENEMIES)
                                 CreateEnemy();
 
                             //No gano nada si hay 20 enemigos y 5 aliados
@@ -55,18 +58,18 @@ public class TileView : MonoBehaviour
                         }
 
                         //Hay aliado
-                        else if (tile.Ally != null)
+                        else if (Ally != null)
                         {
                             DeleteAlly();
 
                             //Hay menos de 20 enemigos, pongo un enemigo
-                            if (GameManager.Instance.Board.NumEnemies < GameManager.MAXENEMIES)
+                            if (GameManager.Instance.Map.Enemies.Count < GameManager.MAXENEMIES)
                                 CreateEnemy();
 
                             //Hay más de 20 enemigos, pone un tile vacio
                         }
 
-                        else if (tile.Enemy.Count > 0)
+                        else if (Enemy.Count > 0)
                         {
                             DeleteEnemy();
                         }
@@ -85,21 +88,13 @@ public class TileView : MonoBehaviour
     /// </summary>
     private void CreateHero()
     {
-        //Establecemos la lógica
-        tile.Hero = new Hero(tile);
-        Pos pos = tile.Pos;
-
         //Construimos el GameObject Hero
-        GameObject heroGO = Instantiate(GameManager.Instance.HeroPrefab, new Vector3(pos.X * GameManager.DISTANCE, -pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
-        HeroView = heroGO.GetComponent<HeroView>();
-        HeroView.BuildHero(tile.Hero);
+        GameObject heroGO = Instantiate(GameManager.Instance.HeroPrefab, new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
+        Hero = heroGO.GetComponent<Hero>();
+        Hero.BuildAlly(this);
 
         //Guardamos la referencia en GameManger
-        GameManager.Instance.Hero = HeroView;
-
-        List<GameObject> list = new List<GameObject>();
-        list.Add(heroGO);
-        GameManager.Instance.Boats.Add(pos, list);
+        GameManager.Instance.Map.Hero = Hero;
 
         //Cambiamos de estado
         GameManager.Instance.State = SceneState.SETMAP;

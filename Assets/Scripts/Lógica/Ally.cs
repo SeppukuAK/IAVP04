@@ -1,13 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class Ally  {
+public class Ally : MonoBehaviour
+{
+    /// <summary>
+    /// Tile en el que se encuentra el aliado
+    /// </summary>
+    public Tile Tile { get; set; }
 
-    public Tile Tile;
-    public Ally(Tile tile)
+    public void BuildAlly(Tile tile)
     {
         Tile = tile;
+    }
+
+    public virtual void NextStep()
+    {
 
     }
 }
