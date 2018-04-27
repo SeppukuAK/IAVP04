@@ -21,4 +21,8 @@ public class EnemyView : MonoBehaviour {
     {
         this.enemy = enemy;
     }
+
+    public void NextStep()
+    {
+    }
 }

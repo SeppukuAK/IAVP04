@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AllyView : MonoBehaviour {
 
-    private Ally ally;
+    public Ally Ally { get; set; }
     // Use this for initialization
     void Start()
     {
@@ -19,6 +19,8 @@ public class AllyView : MonoBehaviour {
 
     public void BuildAlly(Ally ally)
     {
-        this.ally = ally;
+        Ally = ally;
     }
+
+
 }

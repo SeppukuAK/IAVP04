@@ -19,4 +19,8 @@ public class HeroView : MonoBehaviour {
     {
         this.hero = hero;
     }
+
+    public void NextStep()
+    {
+    }
 }

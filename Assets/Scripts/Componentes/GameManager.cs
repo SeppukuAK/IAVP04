@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 using Jackyjjc.Bayesianet;
 
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
 /// </summary>
-public enum SceneState { SETHERO, SETMAP,NULL }
+public enum SceneState { SETHERO, SETMAP, PLAY, NULL }
 
 public class GameManager : MonoBehaviour
 {
@@ -17,9 +19,11 @@ public class GameManager : MonoBehaviour
 
     //------------------CONSTANTES-------------------
 
+    public const float DISTANCE = 0.64f;
     public const int WIDTH = 12;
     public const int HEIGHT = 6;
-    public const float DISTANCE = 0.64f;
+    public const int MAXENEMIES = 20;
+    public const int MAXALLIES = 5;
 
     //------------------CONSTANTES-------------------
 
@@ -29,7 +33,10 @@ public class GameManager : MonoBehaviour
     public GameObject AllyPrefab;
     public GameObject EnemyPrefab;
 
-    // private GameObject heroGO;
+    public Light AmbientLight;
+
+    public Button ButtonPlay;
+
     //------------------INSPECTOR-------------------
 
     //------------------PROPIEDADES-------------------
@@ -38,11 +45,22 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public SceneState State { get; set; }
 
-
     /// <summary>
     /// Posición del refugio
     /// </summary>
     public Pos Refuge { get; set; }
+
+    /// <summary>
+    /// Referencia al Heroe
+    /// </summary>
+    public HeroView Hero { get; set; }
+
+    public List<AllyView> Allies { get; set; }
+
+    public List<EnemyView> Enemies { get; set; }
+
+    public bool LightOn { get; set; }
+
     //------------------PROPIEDADES-------------------
 
 
@@ -56,9 +74,13 @@ public class GameManager : MonoBehaviour
     /// Matriz de GO tiles
     /// </summary>
     private GameObject[,] tileMatrix { get; set; }
-    public Dictionary<Pos, List<GameObject>> personajes;
-    //----------------ATRIBUTOS PRIVADOS------------------
 
+    /// <summary>
+    /// Diccionario que guarda todas las posiciones ocupadas por barcos y todos los barcos en esas posiciones
+    /// </summary>
+    public Dictionary<Pos, List<GameObject>> Boats;
+
+    //----------------ATRIBUTOS PRIVADOS------------------
 
     private void Awake()
     {
@@ -69,7 +91,10 @@ public class GameManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        ButtonPlay.gameObject.SetActive(false);
         State = SceneState.NULL;
+
+        LightOn = true;
 
         //Referente a la Red Bayesiana
         /*
@@ -91,6 +116,9 @@ public class GameManager : MonoBehaviour
         Refuge = new Pos(0, 5);
 
         State = SceneState.SETHERO;
+
+        Boats = new Dictionary<Pos, List<GameObject>>();
+        Enemies = new List<EnemyView>();
     }
 
 
@@ -120,48 +148,74 @@ public class GameManager : MonoBehaviour
 
     }
 
-    
-    public void CreateHero(Hero hero)
+
+    public void InitGame()
     {
-        Pos pos = hero.Tile.Pos;
-        GameObject heroGO = Instantiate(HeroPrefab, new Vector3(pos.X* DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
-        
-        //No puede haber nada antes del héroe
-        List<GameObject> listaPersonajes = new List<GameObject>();
-        listaPersonajes.Add(heroGO);
-        personajes.Add(pos, listaPersonajes);    
-        
-        HeroView heroView = heroGO.GetComponent<HeroView>();
-        heroView.BuildHero(hero);
+        State = SceneState.PLAY;
 
-        State = SceneState.SETMAP;
+        ButtonPlay.gameObject.SetActive(false);
 
-        //Añadimos la posicion del heroe a la matriz lógica
-        //board.SetHero(pos.X, pos.Y);
-
-        //Instanciamos el héroe
+        StartCoroutine(OnTurn());
     }
 
-    public void CreateAlly(Ally ally)
+    /// <summary>
+    /// Corrutina que llama a avanzar un paso de todos los barcos
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator OnTurn()
     {
-        Pos pos = ally.Tile.Pos;
-        GameObject allyGO = Instantiate(AllyPrefab, new Vector3(pos.X * DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
+        while (State == SceneState.PLAY)
+        {
+            for (int i = 0; i < Enemies.Count; i++)
+                Enemies[i].NextStep();
 
-        List<GameObject> listaPersonajes = new List<GameObject>();
-        listaPersonajes.Add(allyGO);
-        personajes.Add(pos, listaPersonajes);
-        AllyView allyView = allyGO.GetComponent<AllyView>();
-        allyView.BuildAlly(ally);
+            Hero.NextStep();
+            yield return new WaitForSeconds(1.0f);
+        }
+    }
 
+    public void OnOffLight()
+    {
+
+        if (LightOn)
+        {
+            AmbientLight.enabled = false;
+            LightOn = false;
+
+            if (Hero != null)
+                Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
+
+        }
+        else
+        {
+            AmbientLight.enabled = true;
+            LightOn = true;
+
+            if (Hero != null)
+                Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
+        }
 
     }
-    public void CreateEnemy(Enemy enemy)
-    {
-        Pos pos = enemy.Tile.Pos;
-        GameObject heroGO = Instantiate(AllyPrefab, new Vector3(pos.X * DISTANCE, -pos.Y * DISTANCE, 0.0f), Quaternion.identity);
 
-        EnemyView enemyView = heroGO.GetComponent<EnemyView>();
-        enemyView.BuildEnemy(enemy);
+    /// <summary>
+    /// Devuelve el aliado más cercano a un enemigo
+    /// </summary>
+    /// <param name="enemy"></param>
+    /// <returns></returns>
+    public Ally GetNearestAlly(Enemy enemy)
+    {
+        Ally ally = Allies[0].Ally;
+        int minDistance = enemy.Tile.Pos.ManhattanDistance(Allies[0].Ally.Tile.Pos);
+        for(int i = 1; i < Allies.Count; i++)
+        {
+            int distance = enemy.Tile.Pos.ManhattanDistance(Allies[i].Ally.Tile.Pos);
+            if (distance < minDistance)
+            {
+                ally = Allies[i].Ally;
+            }
+        }
+
+        return ally;
     }
 
 }
