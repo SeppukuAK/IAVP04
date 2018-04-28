@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+
 
 
 /// <summary>
@@ -26,7 +28,7 @@ public class Tile : MonoBehaviour
     private void OnMouseDown()
     {
         //Se comprueba que en la casilla donde se ha hecho click no está el refugio
-        if (!GameManager.Instance.Map.Refuge.Equals(Pos))
+        if (!Map.Instance.Refuge.Equals(Pos))
         {
             switch (GameManager.Instance.State)
             {
@@ -42,15 +44,15 @@ public class Tile : MonoBehaviour
                         if (!AllyIsHere && NumEnemies == 0)
                         {
                             //hay menos de 5 aliados, pongo un aliado
-                            if (GameManager.Instance.Map.Allies.Count < GameManager.MAXALLIES)
+                            if (Map.Instance.Allies.Count < GameManager.MAXALLIES)
                                 CreateAlly();
 
                             //hay más de 5 aliados, y menos de 20 enemigos, pongo un enemigo
-                            else if (GameManager.Instance.Map.Enemies.Count < GameManager.MAXENEMIES)
+                            else if (Map.Instance.Enemies.Count < GameManager.MAXENEMIES)
                                 CreateEnemy();
 
                             //No gano nada si hay 20 enemigos y 5 aliados
-                            
+
                         }
 
                         //Hay aliado
@@ -59,7 +61,7 @@ public class Tile : MonoBehaviour
                             DeleteAlly();
 
                             //Hay menos de 20 enemigos, pongo un enemigo
-                            if (GameManager.Instance.Map.Enemies.Count < GameManager.MAXENEMIES)
+                            if (Map.Instance.Enemies.Count < GameManager.MAXENEMIES)
                                 CreateEnemy();
 
                             //Hay más de 20 enemigos, pone un tile vacio
@@ -90,7 +92,7 @@ public class Tile : MonoBehaviour
         hero.BuildUnit(Pos);
 
         //Guardamos la referencia en GameManger
-        GameManager.Instance.Map.Hero = hero;
+        Map.Instance.Hero = hero;
 
         //Cambiamos de estado
         GameManager.Instance.State = SceneState.SETMAP;
@@ -108,7 +110,7 @@ public class Tile : MonoBehaviour
         ally.BuildUnit(Pos);
 
         //Guardamos la referencia en GameManger
-        GameManager.Instance.Map.Allies.Add(Pos,ally);
+        Map.Instance.Allies.Add(ally);
 
         //Guardamos la información en el tile
         AllyIsHere = true;
@@ -122,37 +124,66 @@ public class Tile : MonoBehaviour
         enemy.BuildUnit(Pos);
 
         //Guardamos la referencia en GameManger
-        GameManager.Instance.Map.Enemies.Add(Pos, enemy);
+        Map.Instance.Enemies.Add(enemy);
 
         //Guardamos la información en el tile
         NumEnemies++;
     }
-
-    private void DeleteAlly()
+    /// <summary>
+    /// Método para eliminar un enemigo del mapa en el estado de SETMAP
+    /// Se usa además cuando un aliado muere durante un combate
+    /// </summary>
+    public void DeleteAlly()
     {
-        //Borramos la información en el tile
         AllyIsHere = false;
+        bool allyFound = false;
+        List<Ally> allies = Map.Instance.Allies;
+
+        int i = 0;
 
         //Encontrar el aliado en la lista del GameManager y borrarlo
-        Ally ally = GameManager.Instance.Map.Allies[Pos];
-        GameManager.Instance.Map.Allies.Remove(Pos);
+        while(i < allies.Count && !allyFound)
+        {
+            if(allies[i].Pos == this.Pos)
+            {
+                allyFound = true;
+                Ally allyAux = allies[i];
 
-        //Destruir la instancia
-        Destroy(ally.gameObject);
+                allies.RemoveAt(i);
+                //Destruir la instancia
+                Destroy(allyAux.gameObject);
+            }
+            i++;
+        }             
+        
     }
 
-
+    /// <summary>
+    /// Método para eliminar un enemigo del mapa en el estado de SETMAP
+    /// </summary>
     private void DeleteEnemy()
     {
         //Borramos la información en el tile
         NumEnemies--;
 
-        //Encontrar el aliado en la lista del GameManager y borrarlo
-        Enemy enemy = GameManager.Instance.Map.Enemies[Pos];
-        GameManager.Instance.Map.Enemies.Remove(Pos);
+        bool enemyFound = false;
+        List<Enemy> enemies = Map.Instance.Enemies;
 
-        //Destruir la instancia
-        Destroy(enemy.gameObject);
+        int i = 0;
+
+        //Encontrar el aliado en la lista del GameManager y borrarlo
+        while (i < enemies.Count && !enemyFound)
+        {
+            if (enemies[i].Pos == this.Pos)
+            {
+                enemyFound = true;
+                Enemy enemyAux = enemies[i];
+                enemies.RemoveAt(i);
+                //Destruir la instancia
+                Destroy(enemyAux.gameObject);
+            }
+            i++;
+        }
     }
 
 }

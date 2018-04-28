@@ -8,7 +8,7 @@ using Jackyjjc.Bayesianet;
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
 /// </summary>
-public enum SceneState { SETHERO, SETMAP, PLAY, NULL }
+public enum SceneState { SETHERO, SETMAP, PLAY, GAMEOVER, NULL }
 
 public class GameManager : MonoBehaviour
 {
@@ -25,10 +25,15 @@ public class GameManager : MonoBehaviour
     public const int MAXENEMIES = 20;
     public const int MAXALLIES = 5;
 
+    //Probabilidades del combate
+    public const float PROBTHREEORMOREALLIES = 0.9f;
+    public const float PROBTWOALLIES = 0.5f;
+    public const float PROBONEALLY = 0.2f;
+    public const float PROBNOLIGHT = -0.1f;
+
     //------------------CONSTANTES-------------------
 
     //------------------INSPECTOR-------------------
-    public Map Map;
 
     public GameObject TilePrefab;
     public GameObject HeroPrefab;
@@ -58,18 +63,13 @@ public class GameManager : MonoBehaviour
     {
         //GameManager es Singleton
         Instance = this;
-
+        State = SceneState.NULL;
         ButtonPlay.gameObject.SetActive(false);
     }
 
     // Use this for initialization
     void Start()
     {
-        State = SceneState.NULL;
-
-        //Se genera el tablero
-        Map.BuildMap();
-
         State = SceneState.SETHERO;
     }
 
@@ -79,46 +79,40 @@ public class GameManager : MonoBehaviour
 
         ButtonPlay.gameObject.SetActive(false);
 
-        StartCoroutine(OnTurn());
+        Map.Instance.UpdateProbability();
+
+        StartCoroutine(Map.Instance.OnTurn());
     }
 
-    /// <summary>
-    /// Corrutina que llama a avanzar un paso de todos los barcos
-    /// </summary>
-    /// <returns></returns>
-    IEnumerator OnTurn()
-    {
-        while (State == SceneState.PLAY)
-        {
-            foreach(Enemy enemy in Map.Enemies.Values)
-                enemy.NextStep();
 
-            Map.Hero.NextStep();
-            yield return new WaitForSeconds(1.0f);
-        }
-    }
 
     public void OnOffLight()
     {
 
-        if (Map.LightOn)
+        if (Map.Instance.LightOn)
         {
             AmbientLight.enabled = false;
-            Map.LightOn = false;
+            Map.Instance.LightOn = false;
 
-            if (Map.Hero != null)
-                Map.Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
+            if (Map.Instance.Hero != null)
+                Map.Instance.Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
 
         }
         else
         {
             AmbientLight.enabled = true;
-            Map.LightOn = true;
+            Map.Instance.LightOn = true;
 
-            if (Map.Hero != null)
-                Map.Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
+            if (Map.Instance.Hero != null)
+                Map.Instance.Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
         }
-
+        Map.Instance.UpdateProbability();
     }
 
+    public void GameOver()
+    {
+        State = SceneState.GAMEOVER;
+        //MOSTRAR PUNTUACIÓN FEDE COMEME LOS HUEVIS
+
+    }
 }
