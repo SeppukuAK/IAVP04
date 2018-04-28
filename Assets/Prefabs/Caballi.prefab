@@ -71,7 +71,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4127546915255584}
   - component: {fileID: 212716581757457540}
-  - component: {fileID: 114384853745629940}
+  - component: {fileID: 114269015814872988}
   m_Layer: 0
   m_Name: Caballi
   m_TagString: Untagged
@@ -143,7 +143,7 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!114 &114384853745629940
+--- !u!114 &114269015814872988
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1939842449740634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdce81742f9f5134abe25feda46643d4, type: 3}
+  m_Script: {fileID: 11500000, guid: 5bbb93e71b4472d4f8c86f9e3661928f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &114455018066861192

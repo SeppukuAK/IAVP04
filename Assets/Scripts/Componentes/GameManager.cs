@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     //------------------CONSTANTES-------------------
 
     //------------------INSPECTOR-------------------
-    public Board Map;
+    public Map Map;
 
     public GameObject TilePrefab;
     public GameObject HeroPrefab;
@@ -90,8 +90,8 @@ public class GameManager : MonoBehaviour
     {
         while (State == SceneState.PLAY)
         {
-            for (int i = 0; i < Map.Enemies.Count; i++)
-                Map.Enemies[i].NextStep();
+            foreach(Enemy enemy in Map.Enemies.Values)
+                enemy.NextStep();
 
             Map.Hero.NextStep();
             yield return new WaitForSeconds(1.0f);
@@ -119,27 +119,6 @@ public class GameManager : MonoBehaviour
                 Map.Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
         }
 
-    }
-
-    /// <summary>
-    /// Devuelve el aliado más cercano a un enemigo
-    /// </summary>
-    /// <param name="enemy"></param>
-    /// <returns></returns>
-    public Ally GetNearestAlly(Enemy enemy)
-    {
-        Ally ally = Map.Allies[0];
-        int minDistance = enemy.Tile.Pos.ManhattanDistance(Map.Allies[0].Tile.Pos);
-        for(int i = 1; i < Map.Allies.Count; i++)
-        {
-            int distance = enemy.Tile.Pos.ManhattanDistance(Map.Allies[i].Tile.Pos);
-            if (distance < minDistance)
-            {
-                ally = Map.Allies[i];
-            }
-        }
-
-        return ally;
     }
 
 }

@@ -1,23 +1,15 @@
-﻿using UnityEngine;
-
-public class Enemy : MonoBehaviour
+﻿
+public class Enemy : Unit
 {
 
-    public Tile Tile { get; set; }
-
-    public void BuildEnemy(Tile tile)
+    public override void NextStep()
     {
-        Tile = tile;
-    }
-
-    public void NextStep()
-    {
-        Ally ally = GameManager.Instance.GetNearestAlly(this);
+        Ally ally = GetNearestAlly();
 
         //Eliminar el enemigo guardado en Tile
 
         //Calcular la siguiente mejor posición
-        Pos nextPos = NextBestPos(ally.Tile.Pos);
+        Pos nextPos = NextBestPos(ally.Pos);
 
         //Moverme al siguiente tile
     }
@@ -25,7 +17,7 @@ public class Enemy : MonoBehaviour
     //TODO: SE PUEDE HACER ALEATORIO
     public Pos NextBestPos(Pos allyPos)
     {
-        Pos enemyPos = Tile.Pos;
+        Pos enemyPos = Pos;
         Pos nextPos = null;
 
         //El aliado está a la derecha
@@ -45,5 +37,28 @@ public class Enemy : MonoBehaviour
             nextPos = new Pos(enemyPos.X + 1, enemyPos.Y-1);
 
         return nextPos;
+    }
+
+    /// <summary>
+    /// Devuelve el aliado más cercano a un enemigo
+    /// </summary>
+    /// <param name="enemy"></param>
+    /// <returns></returns>
+    public Ally GetNearestAlly()
+    {
+        Ally nearestAlly = null;
+        int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
+
+        foreach (Ally ally in GameManager.Instance.Map.Allies.Values)
+        {
+            int distance = this.Pos.ManhattanDistance(ally.Pos);
+            if (distance < minDistance)
+            {
+                nearestAlly = ally;
+                minDistance = distance;
+            }
+
+        }
+        return nearestAlly;
     }
 }

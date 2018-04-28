@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 /// <summary>
@@ -14,17 +12,15 @@ public class Tile : MonoBehaviour
     /// </summary>
     public Pos Pos { get; set; }
 
-    public Ally Ally { get; set; }
-    public Hero Hero { get; set; }
-    public List<Enemy> Enemy { get; set; }
-
+    public int NumEnemies { get; set; }
+    public bool HeroIsHere { get; set; }
+    public bool AllyIsHere { get; set; }
 
     public void BuildTile(Pos pos)
     {
         Pos = pos;
-        Hero = null;
-        Ally = null;
-        Enemy = new List<Enemy>();
+        NumEnemies = 0;
+        HeroIsHere = AllyIsHere = false;
     }
 
     private void OnMouseDown()
@@ -40,10 +36,10 @@ public class Tile : MonoBehaviour
 
                 case SceneState.SETMAP:
                     //Distinguir entre que tengo que poner
-                    if (Hero == null)
+                    if (!HeroIsHere)
                     {
                         //Si no hay nada 
-                        if (Ally == null && Enemy.Count == 0)
+                        if (!AllyIsHere && NumEnemies == 0)
                         {
                             //hay menos de 5 aliados, pongo un aliado
                             if (GameManager.Instance.Map.Allies.Count < GameManager.MAXALLIES)
@@ -58,7 +54,7 @@ public class Tile : MonoBehaviour
                         }
 
                         //Hay aliado
-                        else if (Ally != null)
+                        else if (AllyIsHere)
                         {
                             DeleteAlly();
 
@@ -69,7 +65,7 @@ public class Tile : MonoBehaviour
                             //Hay más de 20 enemigos, pone un tile vacio
                         }
 
-                        else if (Enemy.Count > 0)
+                        else if (NumEnemies == 1)
                         {
                             DeleteEnemy();
                         }
@@ -90,95 +86,73 @@ public class Tile : MonoBehaviour
     {
         //Construimos el GameObject Hero
         GameObject heroGO = Instantiate(GameManager.Instance.HeroPrefab, new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
-        Hero = heroGO.GetComponent<Hero>();
-        Hero.BuildAlly(this);
+        Hero hero = heroGO.GetComponent<Hero>();
+        hero.BuildUnit(Pos);
 
         //Guardamos la referencia en GameManger
-        GameManager.Instance.Map.Hero = Hero;
+        GameManager.Instance.Map.Hero = hero;
 
         //Cambiamos de estado
         GameManager.Instance.State = SceneState.SETMAP;
-
         GameManager.Instance.ButtonPlay.gameObject.SetActive(true);
+
+        //Guardamos la información en el tile
+        HeroIsHere = true;
     }
 
     private void CreateAlly()
     {
-        //Establecemos la lógica
-        tile.Ally = new Ally(tile);
-        Pos pos = tile.Pos;
-
         //Construimos el GameObject Ally
-        GameObject allyGO = Instantiate(GameManager.Instance.AllyPrefab, new Vector3(pos.X * GameManager.DISTANCE, -pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
-        AllyView = allyGO.GetComponent<AllyView>();
-        AllyView.BuildAlly(tile.Ally);
+        GameObject allyGO = Instantiate(GameManager.Instance.AllyPrefab, new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
+        Ally ally = allyGO.GetComponent<Ally>();
+        ally.BuildUnit(Pos);
 
-        //Guardamos la referencia en GameManager
-        List<GameObject> list = new List<GameObject>();
-        list.Add(allyGO);
-        GameManager.Instance.Boats.Add(pos, list);
+        //Guardamos la referencia en GameManger
+        GameManager.Instance.Map.Allies.Add(Pos,ally);
 
-        //Aumentamos el número de aliados
-        GameManager.Instance.Board.NumAllies++;
+        //Guardamos la información en el tile
+        AllyIsHere = true;
     }
-
-
 
     private void CreateEnemy()
     {
-        //Establecemos la lógica
-        tile.Enemy.Add(new Enemy(tile));
-        Pos pos = tile.Pos;
-
         //Construimos el GameObject Ally
-        GameObject enemyGO = Instantiate(GameManager.Instance.EnemyPrefab, new Vector3(pos.X * GameManager.DISTANCE, -pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
-        EnemyView enemyView = enemyGO.GetComponent<EnemyView>();
-        EnemyView.Add(enemyView);
+        GameObject enemyGO = Instantiate(GameManager.Instance.EnemyPrefab, new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
+        enemy.BuildUnit(Pos);
 
-        EnemyView[0].BuildEnemy(tile.Enemy[0]);
+        //Guardamos la referencia en GameManger
+        GameManager.Instance.Map.Enemies.Add(Pos, enemy);
 
-        //Guardamos la referencia en GameManager
-        List<GameObject> list = new List<GameObject>();
-        list.Add(enemyGO);
-        GameManager.Instance.Boats.Add(pos, list);
-
-        //Aumentamos el número de aliados
-        GameManager.Instance.Board.NumEnemies++;
+        //Guardamos la información en el tile
+        NumEnemies++;
     }
 
     private void DeleteAlly()
     {
-        //Borramos referencia lógica
-        tile.Ally = null;
+        //Borramos la información en el tile
+        AllyIsHere = false;
 
-        //Borramos referencia visual
-        AllyView = null;
+        //Encontrar el aliado en la lista del GameManager y borrarlo
+        Ally ally = GameManager.Instance.Map.Allies[Pos];
+        GameManager.Instance.Map.Allies.Remove(Pos);
 
-        //Borramos de la lista
-        GameObject allyGo = GameManager.Instance.Boats[tile.Pos][0];
-        GameManager.Instance.Boats.Remove(tile.Pos);
-
-        //Borramos GameObject
-        Destroy(allyGo);
-        GameManager.Instance.Board.NumAllies--;
+        //Destruir la instancia
+        Destroy(ally.gameObject);
     }
 
 
     private void DeleteEnemy()
     {
-        //Borramos referencia lógica
-        tile.Enemy.RemoveAt(0);
+        //Borramos la información en el tile
+        NumEnemies--;
 
-        //Borramos referencia visual
-        EnemyView.RemoveAt(0);
+        //Encontrar el aliado en la lista del GameManager y borrarlo
+        Enemy enemy = GameManager.Instance.Map.Enemies[Pos];
+        GameManager.Instance.Map.Enemies.Remove(Pos);
 
-        //Borramos de la lista
-        GameObject enemyGo = GameManager.Instance.Boats[tile.Pos][0];
-        GameManager.Instance.Boats.Remove(tile.Pos);
-
-        //Borramos GameObject
-        Destroy(enemyGo);
-        GameManager.Instance.Board.NumEnemies--;
+        //Destruir la instancia
+        Destroy(enemy.gameObject);
     }
 
 }

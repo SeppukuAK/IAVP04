@@ -5,7 +5,7 @@ using UnityEngine;
 /// Guarda toda la representación lógica de la matriz de Tiles
 /// Inicializa la matriz, coloca el cadaver y los agujeros
 /// </summary>
-public class Board : MonoBehaviour
+public class Map : MonoBehaviour
 {
     /// <summary>
     /// Posición del refugio
@@ -17,13 +17,15 @@ public class Board : MonoBehaviour
     /// </summary>
     public Hero Hero { get; set; }
 
-    public List<Ally> Allies { get; set; }
+    public Dictionary<Pos,Ally> Allies { get; set; }
 
-    public List<Enemy> Enemies { get; set; }
+    public Dictionary<Pos,Enemy> Enemies { get; set; }
 
     public bool LightOn { get; set; }
 
-    //Representación del tablero
+    /// <summary>
+    /// Representación del tablero
+    /// </summary>
     public Tile[,] Matrix { get; set; }
 
     /// <summary>
@@ -48,7 +50,8 @@ public class Board : MonoBehaviour
             }
         }
 
-        Enemies = new List<Enemy>();
+        Allies = new Dictionary<Pos, Ally>();
+        Enemies = new Dictionary<Pos, Enemy>();
     }
 
 }
