@@ -1,15 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 using Jackyjjc.Bayesianet;
+
+//TODO: GENERAL, TENEMOS QUE VER SI HACEMOS UN STOPALLCORROUTINES DE TODO EL PUTO CODIGO Y ASÍ NO HAGO UN MONTON DE COMPROBACIONES DE SI HERO != NULL Y ESA VERGA
 
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
 /// </summary>
 public enum SceneState { SETHERO, SETMAP, PLAY, GAMEOVER, NULL }
 
+/// <summary>
+/// Controla el estado del juego 
+/// Guarda todas las constantes de juego y los prefabs de Uniades
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     /// <summary>
@@ -40,8 +44,6 @@ public class GameManager : MonoBehaviour
     public GameObject AllyPrefab;
     public GameObject EnemyPrefab;
 
-    public Light AmbientLight;
-
     public Button ButtonPlay;
 
     //------------------INSPECTOR-------------------
@@ -59,56 +61,39 @@ public class GameManager : MonoBehaviour
 
     //----------------ATRIBUTOS PRIVADOS------------------
 
-    private void Awake()
+    void Awake()
     {
         //GameManager es Singleton
         Instance = this;
+
+
         State = SceneState.NULL;
         ButtonPlay.gameObject.SetActive(false);
     }
 
-    // Use this for initialization
     void Start()
     {
         State = SceneState.SETHERO;
     }
 
+    /// <summary>
+    /// Es llamado cuando se pulsa el botón que inicia el juego
+    /// Cambia al estado de juego, Inicia la probabilidad y empieza la corrutina del juego
+    /// </summary>
     public void InitGame()
     {
+        //Cambio de estado
         State = SceneState.PLAY;
-
         ButtonPlay.gameObject.SetActive(false);
 
-        Map.Instance.UpdateProbability();
-
+        //Empieza la corrutina de juego
         StartCoroutine(Map.Instance.OnTurn());
     }
 
-
-
-    public void OnOffLight()
-    {
-
-        if (Map.Instance.LightOn)
-        {
-            AmbientLight.enabled = false;
-            Map.Instance.LightOn = false;
-
-            if (Map.Instance.Hero != null)
-                Map.Instance.Hero.gameObject.GetComponentInChildren<Light>().enabled = true;
-
-        }
-        else
-        {
-            AmbientLight.enabled = true;
-            Map.Instance.LightOn = true;
-
-            if (Map.Instance.Hero != null)
-                Map.Instance.Hero.gameObject.GetComponentInChildren<Light>().enabled = false;
-        }
-        Map.Instance.UpdateProbability();
-    }
-
+    /// <summary>
+    /// Es llamado cuando acaba la partida
+    /// Muestra todas las estadísticas
+    /// </summary>
     public void GameOver()
     {
         State = SceneState.GAMEOVER;

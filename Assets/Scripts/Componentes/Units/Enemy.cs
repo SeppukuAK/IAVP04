@@ -1,15 +1,25 @@
-﻿using DG.Tweening;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
+using DG.Tweening;
 
+/// <summary>
+/// Hijo de unidad
+/// </summary>
 public class Enemy : Unit
 {
+    /// <summary>
+    /// Generador de números random
+    /// Es utilizado para moverse aleatoriamente y calcular probabilidades
+    /// </summary>
     static System.Random rnd = new System.Random();
 
+    /// <summary>
+    /// Es llamdo desde OnTurn() en cada Turno
+    /// </summary>
     public override void NextStep()
     {
         Ally ally = GetNearestAlly();
 
+        //Si no hay ningún aliado no hago nada
         if (ally != null)
         {
             //Calcular la siguiente mejor posición
@@ -23,7 +33,6 @@ public class Enemy : Unit
 
                 //Movemos al enemigo lógicamente
                 Pos = nextPos;
-                
 
                 //En el nuevo tile, añadimos la "referencia" del nuevo enemigo
                 Map.Instance.Matrix[Pos.Y, Pos.X].NumEnemies++;
@@ -32,70 +41,52 @@ public class Enemy : Unit
                 transform.DOMove(new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0), 0.2f);
                 //transform.position = new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0);
                 CheckBattle();
-
             }
         }
 
     }
-    void CheckBattle()
+
+    /// <summary>
+    /// Devuelve el aliado más cercano a un enemigo
+    /// </summary>
+    /// <param name="enemy"></param>
+    /// <returns></returns>
+    public Ally GetNearestAlly()
     {
+        Ally nearestAlly = null;
+        int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
 
-        Tile tile = Map.Instance.Matrix[Pos.Y, Pos.X];
-
-        //Comprobamos si en la casilla en la que se mueve el enemigo hay un aliado o el héroe
-        if (tile.AllyIsHere || tile.HeroIsHere)
+        //TODO: LINQ
+        foreach (Ally ally in Map.Instance.Allies)
         {
-            //Generamos el random entre 1 y 100
-            int random = rnd.Next(1, 101);
-
-            bool alliesWin = (random <= Map.Instance.WinRate * 100);
-
-            //Caso en el que los aliados ganan
-            if (alliesWin)
+            int distance = this.Pos.ManhattanDistance(ally.Pos);
+            if (distance < minDistance)
             {
-                //Borramos la información en el tile
-                tile.NumEnemies--;
-
-                //Encontrar el enemigo en la lista del GameManager y borrarlo
-                Map.Instance.Enemies.Remove(this);
-
-                StopAllCoroutines();
-                Destroy(this.gameObject);
-            }
-            //Caso en el que los aliados pierden
-            else
-            {
-                //Se destruye al aliado
-                if (tile.AllyIsHere)
-                {
-                    //Destruir al aliade
-                    tile.DeleteAlly();
-
-                    //Se actualiza la probabilidad al disminuir el número de aliados :(
-                    Map.Instance.UpdateProbability();
-                }
-                //Se destruye al héroe
-                else if (tile.HeroIsHere)
-                {
-
-                    //Se destruye el game Object
-                    Destroy(Map.Instance.Hero.gameObject);
-                    Map.Instance.Hero = null;
-
-                    //Se elimina la referencia del héroe en el tile en el que estaba
-                    tile.HeroIsHere = false;
-
-                    GameManager.Instance.GameOver();
-                }
+                nearestAlly = ally;
+                minDistance = distance;
             }
 
         }
 
+        //Si está el heroe y es el más cercano, se dirige hacia él
+        if (Map.Instance.Hero != null)//TODO: COMPROBAR QUE ESTO ES CORRECTO
+        {
+            int distanceToHero = Map.Instance.Hero.Pos.ManhattanDistance(this.Pos);
 
+            if (distanceToHero <= minDistance)
+                nearestAlly = Map.Instance.Hero;
+        }
+
+        return nearestAlly;
     }
 
-    //TODO: SE PUEDE HACER ALEATORIO HECHO :) MHHHHHMMMMM
-    public Pos NextBestPos(Pos allyPos)
+
+    /// <summary>
+    /// Devuelve la siguiente posición a la que tiene que moverse el enemigo
+    /// </summary>
+    /// <param name="allyPos"></param>
+    /// <returns></returns>
+    private Pos NextBestPos(Pos allyPos)
     {
         Pos nextPos = null;
 
@@ -119,7 +110,6 @@ public class Enemy : Unit
             nextPos = VerticalMovement(allyPos);
 
             //Si no he podido moverme verticalmente, me muevo horizontalmente
-
             if (nextPos == null)
                 nextPos = HorizontalMovement(allyPos);
 
@@ -133,7 +123,7 @@ public class Enemy : Unit
     /// </summary>
     /// <param name="allyPos"></param>
     /// <returns></returns>
-    Pos VerticalMovement(Pos allyPos)
+    private Pos VerticalMovement(Pos allyPos)
     {
         Pos nextPos = null;
 
@@ -154,7 +144,7 @@ public class Enemy : Unit
     /// </summary>
     /// <param name="allyPos"></param>
     /// <returns></returns>
-    Pos HorizontalMovement(Pos allyPos)
+    private Pos HorizontalMovement(Pos allyPos)
     {
         Pos nextPos = null;
 
@@ -170,33 +160,66 @@ public class Enemy : Unit
     }
 
     /// <summary>
-    /// Devuelve el aliado más cercano a un enemigo
+    /// Compruba si hay batalla y la realiza
     /// </summary>
-    /// <param name="enemy"></param>
-    /// <returns></returns>
-    public Ally GetNearestAlly()
+    private void CheckBattle()
     {
-        Ally nearestAlly = null;
-        int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
+        Tile tile = Map.Instance.Matrix[Pos.Y, Pos.X];
 
-        foreach (Ally ally in Map.Instance.Allies)
+        //Comprobamos si en la casilla en la que se mueve el enemigo hay un aliado o el héroe
+        if (tile.AllyIsHere || tile.HeroIsHere)
         {
-            int distance = this.Pos.ManhattanDistance(ally.Pos);
-            if (distance < minDistance)
+            //Generamos el random entre 1 y 100
+            int random = rnd.Next(1, 101);
+
+            bool alliesWin = (random <= Map.Instance.WinRate * 100);
+
+            //El enemigo muere
+            if (alliesWin)
             {
-                nearestAlly = ally;
-                minDistance = distance;
+                //Borramos la información en el tile
+                tile.NumEnemies--;
+
+                //Eliminamos al enemigo de la lista de Enemigos
+                Map.Instance.Enemies.Remove(this);
+
+                Map.Instance.OnMapChange();
+
+                StopAllCoroutines();
+                Destroy(this.gameObject);
+            }
+
+            //El aliado muere
+            else
+            {
+                //Se destruye al aliado
+                if (tile.AllyIsHere)
+                {
+                    //Destruir al aliade
+                    tile.DeleteAlly();
+
+                    //Se actualiza la probabilidad al disminuir el número de aliados :(
+                    Map.Instance.OnMapChange();
+                }
+                //Se destruye al héroe
+                else if (tile.HeroIsHere)
+                {
+                    //Se elimina la referencia del héroe en el tile en el que estaba
+                    tile.HeroIsHere = false;
+
+                    //Se destruye el game Object
+                    Destroy(Map.Instance.Hero.gameObject);
+                    Map.Instance.Hero = null;
+
+                    GameManager.Instance.GameOver();
+                }
             }
 
         }
-        if (Map.Instance.Hero != null)
-        {
-            int distanceToHero = Map.Instance.Hero.Pos.ManhattanDistance(this.Pos);
 
-            if (distanceToHero <= minDistance)
-                nearestAlly = Map.Instance.Hero;
-        }
 
-        return nearestAlly;
     }
+
+
+
 }
