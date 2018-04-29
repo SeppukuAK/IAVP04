@@ -12,6 +12,18 @@ public class Enemy : Unit
     /// </summary>
     static System.Random rnd = new System.Random();
 
+    public bool DestroyThisEnemy { get; set; }
+
+    /// <summary>
+    /// Constructura de la Unidad. Asigna su posición lógica
+    /// </summary>
+    /// <param name="pos"></param>
+    public override void BuildUnit(Pos pos)
+    {
+        Pos = pos;
+        DestroyThisEnemy = false;
+    }
+
     /// <summary>
     /// Es llamdo desde OnTurn() en cada Turno
     /// </summary>
@@ -39,7 +51,7 @@ public class Enemy : Unit
 
                 //Mover al enemigo        
                 transform.DOMove(new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0), 0.2f);
-                //transform.position = new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0);
+
                 CheckBattle();
             }
         }
@@ -180,13 +192,7 @@ public class Enemy : Unit
                 //Borramos la información en el tile
                 tile.NumEnemies--;
 
-                //Eliminamos al enemigo de la lista de Enemigos
-                Map.Instance.Enemies.Remove(this);
-
-                Map.Instance.OnMapChange();
-
-                StopAllCoroutines();
-                Destroy(this.gameObject);
+                DestroyThisEnemy = true;
             }
 
             //El aliado muere

@@ -14,7 +14,7 @@ public class Unit : MonoBehaviour {
     /// Constructura de la Unidad. Asigna su posición lógica
     /// </summary>
     /// <param name="pos"></param>
-    public void BuildUnit(Pos pos)
+    public virtual void BuildUnit(Pos pos)
     {
         Pos = pos;
     }

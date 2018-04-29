@@ -132,8 +132,26 @@ public class Map : MonoBehaviour
     {
         while (GameManager.Instance.State == SceneState.PLAY)
         {
-            foreach (Enemy enemy in Enemies)
-                enemy.NextStep();
+            for (int i = 0; i < Enemies.Count;)
+            {
+                Enemies[i].NextStep();
+
+                if (Enemies[i].DestroyThisEnemy)
+                {
+                    Enemy enemyAux = Enemies[i];
+                    //Eliminamos al enemigo de la lista de Enemigos
+                    Enemies.Remove(enemyAux);
+
+                    Destroy(enemyAux.gameObject);
+
+                    OnMapChange();
+                }
+                else
+                    i++;
+
+            }
+
+
 
             if (Hero != null)
                 Hero.NextStep();
