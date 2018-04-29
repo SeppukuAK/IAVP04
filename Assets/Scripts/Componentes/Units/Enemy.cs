@@ -24,7 +24,7 @@ public class Enemy : Unit
     /// </summary>
     public override void NextStep()
     {
-        Ally ally = GetNearestAlly();
+        Unit ally = GetNearestAlly();
 
         //Si no hay ningún aliado no hago nada
         if (ally != null)
@@ -58,13 +58,13 @@ public class Enemy : Unit
     /// </summary>
     /// <param name="enemy"></param>
     /// <returns></returns>
-    public Ally GetNearestAlly()
+    public Unit GetNearestAlly()
     {
-        Ally nearestAlly = null;
+        Unit nearestAlly = null;
         int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
 
         //TODO: LINQ
-        foreach (Ally ally in Map.Instance.Allies)
+        foreach (Unit ally in Map.Instance.Allies)
         {
             int distance = this.Pos.ManhattanDistance(ally.Pos);
             if (distance < minDistance)
@@ -115,6 +115,10 @@ public class Enemy : Unit
                 Map.Instance.Score += GameManager.POINTSENEMYDEADBYALLY;
 
                 DestroyThisEnemy = true;
+
+                //Se aumenta el número de enemigos matados por los aliados
+                Map.Instance.NumEnemiesKilledByAllies++;
+
             }
 
             //El aliado muere
@@ -128,6 +132,10 @@ public class Enemy : Unit
 
                 //Se actualiza la probabilidad al disminuir el número de aliados 
                 Map.Instance.OnMapChange();
+
+                //Se aumenta el número de aliados muertos
+                Map.Instance.NumAlliesDead++;
+
             }
 
         }
@@ -150,6 +158,9 @@ public class Enemy : Unit
                 Map.Instance.Score += GameManager.POINTSENEMYDEADBYHERO;
 
                 DestroyThisEnemy = true;
+
+                //Se aumenta el número de enemigos matados por el héroe
+                Map.Instance.NumEnemiesKilledByHero++;
             }
             //El héroe muere
             else

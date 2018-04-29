@@ -22,10 +22,15 @@ public class Map : MonoBehaviour
     public Light AmbientLight;
 
     //Textos de estadísticas
-    public Text EnemyProbText;
-    public Text NumEnemiesText;
     public Text NumAlliesText;
+    public Text NumEnemiesText;
+    public Text EnemyProbText;
     public Text ScoreText;
+    public Text HeroAliveText;
+    public Text AlliesDeadText;
+    public Text EnemiesKilledByAlliesText;
+    public Text EnemiesKilledByHeroText;
+
 
     public GameObject StatsPanel;
     //--------------INSPECTOR--------------------
@@ -43,7 +48,7 @@ public class Map : MonoBehaviour
 
     //Unidades
     public Hero Hero { get; set; }
-    public List<Ally> Allies { get; set; }
+    public List<Unit> Allies { get; set; }
     public List<Enemy> Enemies { get; set; }
 
     /// <summary>
@@ -55,6 +60,12 @@ public class Map : MonoBehaviour
     /// Puntuación total de la partida
     /// </summary>
     public int Score { get; set; }
+
+    public int NumAlliesDead { get; set; }
+
+    public int NumEnemiesKilledByHero{ get; set; }
+
+    public int NumEnemiesKilledByAllies { get; set; }
 
     /// <summary>
     /// Devuelve si la luz está encendida y permite apagar y encender la luces
@@ -99,6 +110,7 @@ public class Map : MonoBehaviour
         //Se genera el tablero
         BuildMap();
         Score = 0;
+        NumAlliesDead = NumEnemiesKilledByHero = NumEnemiesKilledByAllies = 0;
     }
 
 
@@ -124,7 +136,7 @@ public class Map : MonoBehaviour
             }
         }
 
-        Allies = new List<Ally>();
+        Allies = new List<Unit>();
         Enemies = new List<Enemy>();
 
         WinRate = 0.0f;
@@ -161,8 +173,8 @@ public class Map : MonoBehaviour
             if (Hero != null)
                 Hero.NextStep();
 
-            if (Hero == null || Enemies.Count == 0 || (Hero != null && Hero.Pos.Equals(Refuge)))
-                GameManager.Instance.GameOver();
+            if (Hero == null || (Hero != null && Hero.Pos.Equals(Refuge)))
+                GameManager.Instance.GameOver();      
 
             yield return new WaitForSeconds(1.0f);
         }
@@ -170,7 +182,6 @@ public class Map : MonoBehaviour
 
     /// <summary>
     /// Es llamado cada vez que se añade o elimina una unidad en el mapa
-    /// TODO: SOLO SE LE DEBERÍA LLAMAR SI NO ESTAMOS EN GAMEOVER -> COMPROBAR QUE ESTO ES ASI
     /// </summary>
     public void OnMapChange()
     {
@@ -204,16 +215,37 @@ public class Map : MonoBehaviour
     /// </summary>
     private void UpdateTextStats()
     {
-        EnemyProbText.text = "Probabilidad de ganar los enemigos al entrar en combate: " + (1.0f - WinRate) * 100 + "%";
-        NumEnemiesText.text = "Enemigos: " + Enemies.Count;
-
+        //Aliados
         int numAllies = Allies.Count;
 
         if (Hero != null)
             numAllies++;
 
         NumAlliesText.text = "Aliados: " + numAllies;
+
+        //Enemigos
+        NumEnemiesText.text = "Enemigos: " + Enemies.Count;
+
+        //Probabilidad de que ganen los enemigos
+        EnemyProbText.text = "Probabilidad de ganar los enemigos al entrar en combate: " + (1.0f - WinRate) * 100 + "%";
+        
+        //Puntuación
         ScoreText.text = "Puntuación: " + Score;
+
+        //Héroe vivo
+        HeroAliveText.text = "Héroe vivo: " + (Hero != null);
+
+        //Número de aliados muertos
+        AlliesDeadText.text = "Aliados muertos: " + NumAlliesDead;
+
+        //Número de enemigos matados por los aliados
+        EnemiesKilledByAlliesText.text = "Enemigos matados por los aliados: " + NumEnemiesKilledByAllies;
+
+        //Número de enemigos matados por el héroe
+        EnemiesKilledByHeroText.text = "Enemigos matados por el héroe: " + NumEnemiesKilledByHero;
+
+
+
     }
 
     /// <summary>

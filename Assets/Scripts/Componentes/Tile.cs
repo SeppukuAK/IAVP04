@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 
 /// <summary>
-/// TODO: Un mejor comentario
+/// Componente asociado a los gameObject Tile, guarda la representación lógica y física de estos e instancia a las unidades correspondientes
 /// </summary>
 public class Tile : MonoBehaviour
 {
@@ -125,7 +126,7 @@ public class Tile : MonoBehaviour
     {
         //Construimos el GameObject Ally
         GameObject allyGO = Instantiate(GameManager.Instance.AllyPrefab, new Vector3(Pos.X * GameManager.DISTANCE, -Pos.Y * GameManager.DISTANCE, 0.0f), Quaternion.identity);
-        Ally ally = allyGO.GetComponent<Ally>();
+        Unit ally = allyGO.GetComponent<Unit>();
         ally.BuildUnit(Pos);
 
         //Guardamos la referencia en el Mapa
@@ -159,6 +160,7 @@ public class Tile : MonoBehaviour
         Map.Instance.OnMapChange();
     }
 
+
     //TODO: HACER LA BUSQUEDA POR LINQ
 
     /// <summary>
@@ -170,25 +172,14 @@ public class Tile : MonoBehaviour
         //Borramos la información en el tile
         AllyIsHere = false;
 
-        bool allyFound = false;
-        List<Ally> allies = Map.Instance.Allies;
+        List<Unit> allies = Map.Instance.Allies;
 
-        int i = 0;
+        //Eliminamos de la lista al aliado
+        Unit ally = allies.First(s => s.Pos.Equals(this.Pos));
+        allies.Remove(ally);
 
-        //Encontrar el aliado en la lista del GameManager y borrarlo
-        while (i < allies.Count && !allyFound)
-        {
-            if (allies[i].Pos.Equals(this.Pos))
-            {
-                allyFound = true;
-                Ally allyAux = allies[i];
-
-                allies.RemoveAt(i);
-                //Destruir la instancia
-                Destroy(allyAux.gameObject);
-            }
-            i++;
-        }
+        //Destruimos el objeto
+        Destroy(ally.gameObject);
 
         Map.Instance.OnMapChange();
     }
@@ -202,24 +193,14 @@ public class Tile : MonoBehaviour
         //Borramos la información en el tile
         NumEnemies--;
 
-        bool enemyFound = false;
         List<Enemy> enemies = Map.Instance.Enemies;
 
-        int i = 0;
+        //Eliminamos de la lista al enemigo
+        Enemy enemy = enemies.First(s => s.Pos.Equals(this.Pos));
+        enemies.Remove(enemy);
 
-        //Encontrar el aliado en la lista del GameManager y borrarlo
-        while (i < enemies.Count && !enemyFound)
-        {
-            if (enemies[i].Pos.Equals(this.Pos))
-            {
-                enemyFound = true;
-                Enemy enemyAux = enemies[i];
-                enemies.RemoveAt(i);
-                //Destruir la instancia
-                Destroy(enemyAux.gameObject);
-            }
-            i++;
-        }
+        //Destruimos el objeto
+        Destroy(enemy.gameObject);
 
         Map.Instance.OnMapChange();
 

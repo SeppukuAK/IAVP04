@@ -32,6 +32,8 @@ public class Unit : MonoBehaviour {
     public virtual void NextStep()
     {
     }
+
+
     /// <summary>
     /// Devuelve la siguiente posición a la que tiene que moverse la unidad
     /// </summary>
@@ -68,6 +70,7 @@ public class Unit : MonoBehaviour {
         return nextPos;
     }
 
+
     /// <summary>
     ///  Método que devuelve la posición más cercana dependiendo de si el objetivo está por encima o por debajo
     ///  Si ya está en la posición correspondiente, devuelvo null
@@ -88,6 +91,7 @@ public class Unit : MonoBehaviour {
 
         return nextPos;
     }
+
 
     /// <summary>
     ///  Método que devuelve la mejor posición dependiendo de si el objetivo está a la izquierda o a la derecha

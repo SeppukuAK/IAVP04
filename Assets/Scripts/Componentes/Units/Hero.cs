@@ -4,7 +4,7 @@ using DG.Tweening;
 /// <summary>
 /// Hijo de Aliado
 /// </summary>
-public class Hero : Ally
+public class Hero : Unit
 {
     public enum HeroState { GOFORWARD, GOBACK, WAIT }
 
@@ -23,6 +23,10 @@ public class Hero : Ally
     public override void NextStep()
     {
         heroState = HeroState.GOFORWARD;
+
+        //Si no hay más enemigos en el mapa, el héroe vuelve al refugio
+        if (Map.Instance.Enemies.Count == 0)
+            heroState = HeroState.GOBACK;
 
         switch (heroState)
         {
@@ -129,6 +133,9 @@ public class Hero : Ally
                 //Informar al mapa de que ha cambiado
                 //Se actualiza la probabilidad al disminuir el número de enemigos
                 Map.Instance.OnMapChange();
+
+                //Se aumenta el número de enemigos matados por el héroe
+                Map.Instance.NumEnemiesKilledByHero++;
             }
             //El héroe muere
             else
