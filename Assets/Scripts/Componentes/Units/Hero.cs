@@ -22,7 +22,7 @@ public class Hero : Ally
 
     public override void NextStep()
     {
-        heroState = HeroState.GOBACK;
+        heroState = HeroState.GOFORWARD;
 
         switch (heroState)
         {
@@ -69,6 +69,7 @@ public class Hero : Ally
     }
 
     //----------------------------------- MÉTODOS DEL ESTADO GOFORWARD -----------------
+
     private void GoBack()
     {
         //Obtenemos la posición del refugio

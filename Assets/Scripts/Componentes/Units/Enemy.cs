@@ -88,8 +88,6 @@ public class Enemy : Unit
     }
 
 
-
-
     /// <summary>
     /// Comprueba si hay batalla y la realiza
     /// </summary>
@@ -98,7 +96,9 @@ public class Enemy : Unit
         Tile tile = Map.Instance.Matrix[Pos.Y, Pos.X];
 
         //Comprobamos si en la casilla en la que se mueve el enemigo hay un aliado o el héroe
-        if (tile.AllyIsHere || tile.HeroIsHere)
+
+        //En el caso en que coinciden aliado y héroe, primero comprobamos si ha chocado con el aliado
+        if (tile.AllyIsHere)
         {
             //Generamos el random entre 1 y 100
             int random = rnd.Next(1, 101);
@@ -112,11 +112,7 @@ public class Enemy : Unit
                 tile.NumEnemies--;
 
                 //Modificamos la puntuación 
-                if (tile.HeroIsHere)
-                    Map.Instance.Score += GameManager.POINTSENEMYDEADBYHERO;
-                else
-                    Map.Instance.Score += GameManager.POINTSENEMYDEADBYALLY;
-
+                Map.Instance.Score += GameManager.POINTSENEMYDEADBYALLY;
 
                 DestroyThisEnemy = true;
             }
@@ -124,42 +120,53 @@ public class Enemy : Unit
             //El aliado muere
             else
             {
-                //Se destruye al aliado
-                if (tile.AllyIsHere)
-                {
-                    //Destruir al aliade
-                    tile.DeleteAlly();
+                //Destruir al aliade
+                tile.DeleteAlly();
 
-                    //Modificamos la puntuación 
-                    Map.Instance.Score += GameManager.POINTSALLYDEAD;
+                //Modificamos la puntuación 
+                Map.Instance.Score += GameManager.POINTSALLYDEAD;
 
-                    //Se actualiza la probabilidad al disminuir el número de aliados 
-                    Map.Instance.OnMapChange();
-                }
-                //Se destruye al héroe
-                else if (tile.HeroIsHere)
-                {
-                    //Se elimina la referencia del héroe en el tile en el que estaba
-                    tile.HeroIsHere = false;
-
-                    //Se destruye el game Object
-                    Destroy(Map.Instance.Hero.gameObject);
-                    Map.Instance.Hero = null;
-
-                    //Modificamos la puntuación 
-                    Map.Instance.Score += GameManager.POINTSHERODEAD;
-
-                    //Se actualiza la probabilidad al disminuir el número de aliados 
-                    Map.Instance.OnMapChange();
-
-                }
+                //Se actualiza la probabilidad al disminuir el número de aliados 
+                Map.Instance.OnMapChange();
             }
 
         }
 
+        //Caso en el que se ha chocado con el héroe y el enemigo no ha muerto aún
+        if (tile.HeroIsHere && !DestroyThisEnemy)
+        {
+            //Generamos el random entre 1 y 100
+            int random = rnd.Next(1, 101);
 
+            bool alliesWin = (random <= Map.Instance.WinRate * 100);
+
+            //El enemigo muere
+            if (alliesWin)
+            {
+                //Borramos la información en el tile
+                tile.NumEnemies--;
+
+                //Modificamos la puntuación 
+                Map.Instance.Score += GameManager.POINTSENEMYDEADBYHERO;
+
+                DestroyThisEnemy = true;
+            }
+            //El héroe muere
+            else
+            {
+                //Se elimina la referencia del héroe en el tile en el que estaba
+                tile.HeroIsHere = false;
+
+                //Se destruye el game Object
+                Destroy(Map.Instance.Hero.gameObject);
+                Map.Instance.Hero = null;
+
+                //Modificamos la puntuación 
+                Map.Instance.Score += GameManager.POINTSHERODEAD;
+
+                //Se actualiza la probabilidad al disminuir el número de aliados 
+                Map.Instance.OnMapChange();
+            }
+        }
     }
-
-
-
 }
