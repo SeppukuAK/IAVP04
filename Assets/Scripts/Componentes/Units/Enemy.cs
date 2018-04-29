@@ -192,6 +192,13 @@ public class Enemy : Unit
                 //Borramos la información en el tile
                 tile.NumEnemies--;
 
+                //Modificamos la puntuación 
+                if (tile.HeroIsHere)
+                    Map.Instance.Score += GameManager.POINTSENEMYDEADBYHERO;
+                else
+                    Map.Instance.Score += GameManager.POINTSENEMYDEADBYALLY;
+
+
                 DestroyThisEnemy = true;
             }
 
@@ -204,7 +211,10 @@ public class Enemy : Unit
                     //Destruir al aliade
                     tile.DeleteAlly();
 
-                    //Se actualiza la probabilidad al disminuir el número de aliados :(
+                    //Modificamos la puntuación 
+                    Map.Instance.Score += GameManager.POINTSALLYDEAD;
+
+                    //Se actualiza la probabilidad al disminuir el número de aliados 
                     Map.Instance.OnMapChange();
                 }
                 //Se destruye al héroe
@@ -217,7 +227,12 @@ public class Enemy : Unit
                     Destroy(Map.Instance.Hero.gameObject);
                     Map.Instance.Hero = null;
 
-                    GameManager.Instance.GameOver();
+                    //Modificamos la puntuación 
+                    Map.Instance.Score += GameManager.POINTSHERODEAD;
+
+                    //Se actualiza la probabilidad al disminuir el número de aliados 
+                    Map.Instance.OnMapChange();
+
                 }
             }
 

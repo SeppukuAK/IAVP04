@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.SceneManagement;
 using Jackyjjc.Bayesianet;
 
 //TODO: GENERAL, TENEMOS QUE VER SI HACEMOS UN STOPALLCORROUTINES DE TODO EL PUTO CODIGO Y ASÍ NO HAGO UN MONTON DE COMPROBACIONES DE SI HERO != NULL Y ESA VERGA
@@ -35,6 +35,13 @@ public class GameManager : MonoBehaviour
     public const float PROBONEALLY = 0.2f;
     public const float PROBNOLIGHT = -0.1f;
 
+    //Puntos
+    public const int POINTSENEMYDEADBYALLY = 1;
+    public const int POINTSENEMYDEADBYHERO = 5;
+    public const int POINTSALLYDEAD = -10;
+    public const int POINTSHERODEAD = -50;
+
+
     //------------------CONSTANTES-------------------
 
     //------------------INSPECTOR-------------------
@@ -45,6 +52,9 @@ public class GameManager : MonoBehaviour
     public GameObject EnemyPrefab;
 
     public Button ButtonPlay;
+
+    public GameObject GameOverPanel;
+    public Text ScoreGameOverText;
 
     //------------------INSPECTOR-------------------
 
@@ -66,9 +76,10 @@ public class GameManager : MonoBehaviour
         //GameManager es Singleton
         Instance = this;
 
-
         State = SceneState.NULL;
         ButtonPlay.gameObject.SetActive(false);
+
+        GameOverPanel.SetActive(false);
     }
 
     void Start()
@@ -88,6 +99,7 @@ public class GameManager : MonoBehaviour
 
         //Empieza la corrutina de juego
         StartCoroutine(Map.Instance.OnTurn());
+
     }
 
     /// <summary>
@@ -97,7 +109,18 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         State = SceneState.GAMEOVER;
-        //MOSTRAR PUNTUACIÓN FEDE COMEME LOS HUEVIS
 
+        GameOverPanel.SetActive(true);
+
+        ScoreGameOverText.text = "Puntuación: " + Map.Instance.Score;
+
+    }
+
+    /// <summary>
+    /// Es llamado por el botón de GameOver
+    /// </summary>
+    public void ResetScene()
+    {
+        SceneManager.LoadScene("IAVP4G01");
     }
 }

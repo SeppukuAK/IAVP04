@@ -25,6 +25,7 @@ public class Map : MonoBehaviour
     public Text EnemyProbText;
     public Text NumEnemiesText;
     public Text NumAlliesText;
+    public Text ScoreText;
 
     public GameObject StatsPanel;
     //--------------INSPECTOR--------------------
@@ -49,6 +50,11 @@ public class Map : MonoBehaviour
     /// Probabilidad de victoria por parte de los aliados feministas :) mmmmmmmmmhhhhhhhhhhhhhhhggghghhhgughputanmmtequieroooasdmsdmmmmm
     /// </summary>
     public float WinRate { get; set; }
+
+    /// <summary>
+    /// Puntuación total de la partida
+    /// </summary>
+    public int Score { get; set; }
 
     /// <summary>
     /// Devuelve si la luz está encendida y permite apagar y encender la luces
@@ -92,6 +98,7 @@ public class Map : MonoBehaviour
     {
         //Se genera el tablero
         BuildMap();
+        Score = 0;
     }
 
 
@@ -151,10 +158,11 @@ public class Map : MonoBehaviour
 
             }
 
-
-
             if (Hero != null)
                 Hero.NextStep();
+
+            if (Hero == null || Enemies.Count == 0)
+                GameManager.Instance.GameOver();
 
             yield return new WaitForSeconds(1.0f);
         }
@@ -200,10 +208,12 @@ public class Map : MonoBehaviour
         NumEnemiesText.text = "Enemigos: " + Enemies.Count;
 
         int numAllies = Allies.Count;
+
         if (Hero != null)
             numAllies++;
 
         NumAlliesText.text = "Aliados: " + numAllies;
+        ScoreText.text = "Puntuación: " + Score;
     }
 
     /// <summary>
