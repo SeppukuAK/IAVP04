@@ -55,6 +55,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject GameOverPanel;
     public Text ScoreGameOverText;
+    public Text HeroWinText;
 
     //------------------INSPECTOR-------------------
 
@@ -113,6 +114,14 @@ public class GameManager : MonoBehaviour
         GameOverPanel.SetActive(true);
 
         ScoreGameOverText.text = "Puntuación: " + Map.Instance.Score;
+
+        //Se modifica el texto dependiendo de si el héroe vence o muere
+        if(Map.Instance.Hero!= null)      
+            HeroWinText.text = "El héroe ha vencido";
+        else
+            HeroWinText.text = "El héroe ha muerto";
+
+
 
     }
 

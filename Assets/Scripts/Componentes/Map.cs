@@ -161,7 +161,7 @@ public class Map : MonoBehaviour
             if (Hero != null)
                 Hero.NextStep();
 
-            if (Hero == null || Enemies.Count == 0)
+            if (Hero == null || Enemies.Count == 0 || (Hero != null && Hero.Pos.Equals(Refuge)))
                 GameManager.Instance.GameOver();
 
             yield return new WaitForSeconds(1.0f);

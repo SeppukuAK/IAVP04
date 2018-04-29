@@ -153,7 +153,7 @@ public class Tile : MonoBehaviour
         //Guardamos la referencia en el Mapa
         Map.Instance.Enemies.Add(enemy);
 
-        //Guardamos la información en el tile
+        //Guardamos la información en el tileD:\UNI\TERCER CURSO\IA\PRÁCTICA 4\IAVP04G01\Assets\Scripts\Componentes\Map.cs
         NumEnemies++;
 
         Map.Instance.OnMapChange();
@@ -178,7 +178,7 @@ public class Tile : MonoBehaviour
         //Encontrar el aliado en la lista del GameManager y borrarlo
         while (i < allies.Count && !allyFound)
         {
-            if (allies[i].Pos == this.Pos)
+            if (allies[i].Pos.Equals(this.Pos))
             {
                 allyFound = true;
                 Ally allyAux = allies[i];
@@ -195,8 +195,9 @@ public class Tile : MonoBehaviour
 
     /// <summary>
     /// Método para eliminar un enemigo del mapa en el estado de SETMAP
+    /// Se llama desde héroe a la hora de destruirse
     /// </summary>
-    private void DeleteEnemy()
+    public void DeleteEnemy()
     {
         //Borramos la información en el tile
         NumEnemies--;
@@ -209,7 +210,7 @@ public class Tile : MonoBehaviour
         //Encontrar el aliado en la lista del GameManager y borrarlo
         while (i < enemies.Count && !enemyFound)
         {
-            if (enemies[i].Pos == this.Pos)
+            if (enemies[i].Pos.Equals(this.Pos))
             {
                 enemyFound = true;
                 Enemy enemyAux = enemies[i];
