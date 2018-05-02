@@ -65,6 +65,12 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public SceneState State { get; set; }
 
+    /// <summary>
+    /// Variable principal de la red Bayesiana
+    /// Tiene la tabla
+    /// </summary>
+    public VariableElimination VariableElimination { get; set; }
+
     //------------------PROPIEDADES-------------------
 
 
@@ -78,9 +84,14 @@ public class GameManager : MonoBehaviour
         Instance = this;
 
         State = SceneState.NULL;
+
         ButtonPlay.gameObject.SetActive(false);
 
         GameOverPanel.SetActive(false);
+
+        string networkJson = (Resources.Load("barquitos") as TextAsset).text;
+        VariableElimination = new VariableElimination(new BayesianJsonParser().Parse(networkJson));
+
     }
 
     void Start()

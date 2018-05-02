@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using DG.Tweening;
+using Jackyjjc.Bayesianet;
 
 /// <summary>
 /// Hijo de Aliado
@@ -7,6 +8,7 @@ using DG.Tweening;
 public class Hero : Unit
 {
     public enum HeroState { GOFORWARD, GOBACK, WAIT }
+
 
     private HeroState heroState;
     /// <summary>
@@ -22,11 +24,7 @@ public class Hero : Unit
 
     public override void NextStep()
     {
-        heroState = HeroState.GOFORWARD;
-
-        //Si no hay más enemigos en el mapa, el héroe vuelve al refugio
-        if (Map.Instance.Enemies.Count == 0)
-            heroState = HeroState.GOBACK;
+        MakeDecision();
 
         switch (heroState)
         {
@@ -38,6 +36,79 @@ public class Hero : Unit
                 GoBack();
                 break;
 
+        }
+    }
+
+    private void MakeDecision()
+    {
+        VariableElimination ve = GameManager.Instance.VariableElimination;
+
+        BayesianNetwork network = ve.GetNetwork();
+
+        //Obtenemos referencia a todas las proposiciones y las crea con los valores observables
+        Proposition enemyProp = network.FindNode("enemies").Instantiate(Map.Instance.GetEnemyAmount());
+        Proposition alliesProp = network.FindNode("allies").Instantiate(Map.Instance.GetAlliesAmount());
+        Proposition lightProp = network.FindNode("light").Instantiate(Map.Instance.GetLight());
+
+        //INFERIMOS LA SITUACIÓN
+        BayesianNode situationNode = ve.GetNetwork().FindNode("situation");
+        double[] situationDistribution = ve.Infer(situationNode,enemyProp, alliesProp);
+
+        string situation;
+
+        switch (ve.PickOne(situationDistribution))
+        {
+            case 0:
+                situation = "many_enemies";
+                break;
+            case 1:
+                situation = "many_allies";
+                break;
+            default:
+                situation = "neutral";
+                break;
+        }
+
+        //Obtenemos la referencia a la proposición creada
+        Proposition situationProp = network.FindNode("situation").Instantiate(situation);
+
+        //INFERIMOS LA DESTREZA
+        BayesianNode skillNode = ve.GetNetwork().FindNode("skill");
+        double[] skillDistribution = ve.Infer(skillNode, lightProp, alliesProp);
+
+        string skill;
+
+        switch (ve.PickOne(skillDistribution))
+        {
+            case 0:
+                skill = "good";
+                break;
+            case 1:
+                skill = "regular";
+                break;
+            default:
+                skill = "bad";
+                break;
+        }
+
+        //Obtenemos la referencia a la proposición creada
+        Proposition skillProp = network.FindNode("skill").Instantiate(skill);
+
+        //INFERIMOS LA ACCION
+        BayesianNode actionNode = ve.GetNetwork().FindNode("action");
+        double[] actionDistribution = ve.Infer(actionNode, enemyProp,alliesProp,lightProp,situationProp,skillProp);
+
+        switch (ve.PickOne(skillDistribution))
+        {
+            case 0:
+                heroState = HeroState.GOFORWARD;
+                break;
+            case 1:
+                heroState = HeroState.GOBACK;
+                break;
+            default:
+                heroState = HeroState.WAIT;
+                break;
         }
     }
     //----------------------------------- MÉTODOS DEL ESTADO GOFORWARD -----------------

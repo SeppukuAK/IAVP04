@@ -63,7 +63,7 @@ public class Map : MonoBehaviour
 
     public int NumAlliesDead { get; set; }
 
-    public int NumEnemiesKilledByHero{ get; set; }
+    public int NumEnemiesKilledByHero { get; set; }
 
     public int NumEnemiesKilledByAllies { get; set; }
 
@@ -174,7 +174,7 @@ public class Map : MonoBehaviour
                 Hero.NextStep();
 
             if (Hero == null || (Hero != null && Hero.Pos.Equals(Refuge)))
-                GameManager.Instance.GameOver();      
+                GameManager.Instance.GameOver();
 
             yield return new WaitForSeconds(1.0f);
         }
@@ -228,7 +228,7 @@ public class Map : MonoBehaviour
 
         //Probabilidad de que ganen los enemigos
         EnemyProbText.text = "Probabilidad de ganar los enemigos al entrar en combate: " + (1.0f - WinRate) * 100 + "%";
-        
+
         //Puntuación
         ScoreText.text = "Puntuación: " + Score;
 
@@ -257,6 +257,61 @@ public class Map : MonoBehaviour
         LightOn = !LightOn;
     }
 
+
+
+
+
+
+
+    //BAYESIANA
+
+    /// <summary>
+    /// Devuelve un String con la cantidad de enemigos
+    /// </summary>
+    /// <returns></returns>
+    public string GetEnemyAmount()
+    {
+        string result;
+
+        if (Enemies.Count == 0)
+            result = "none";
+        else if (Enemies.Count < 5)
+            result = "few";
+        else
+            result = "many";
+
+        return result;
+    }
+
+    /// <summary>
+    /// Devuelve un String con la cantidad de enemigos
+    /// </summary>
+    /// <returns></returns>
+    public string GetAlliesAmount()
+    {
+        string result;
+
+        if (Allies.Count == 0)
+            result = "none";
+        else if (Allies.Count == 1)
+            result = "one";
+        else
+            result = "more";
+
+        return result;
+    }
+
+    /// <summary>
+    /// Devuelve un string con "yes" o "no" dependiendo si está activada la luz
+    /// </summary>
+    /// <returns></returns>
+    public string GetLight()
+    {
+        if (LightOn)
+            return "yes";
+        else
+            return "no";
+    }
 }
 
 
