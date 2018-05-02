@@ -9,9 +9,16 @@ using Jackyjjc.Bayesianet;
 /// </summary>
 public class Hero : Unit
 {
+    /// <summary>
+    /// Decisión de toma el personaje
+    /// </summary>
     public enum HeroState { GOFORWARD, GOBACK, WAIT }
 
+    /// <summary>
+    /// Decisión de toma el personaje
+    /// </summary>
     private HeroState heroState;
+
     /// <summary>
     /// Constructura de la Unidad. Asigna su posición lógica
     /// </summary>
@@ -23,6 +30,10 @@ public class Hero : Unit
         heroState = HeroState.WAIT;
     }
 
+    /// <summary>
+    /// Es llamado al inicio de cada turno
+    /// Toma decisiones y las realiza
+    /// </summary>
     public override void NextStep()
     {
         MakeDecision();
@@ -42,6 +53,9 @@ public class Hero : Unit
         
     }
 
+    /// <summary>
+    /// Utiliza las redes Bayesianas y devuelve la decisión correspondiente
+    /// </summary>
     private void MakeDecision()
     {
         VariableElimination ve = GameManager.Instance.VariableElimination;
@@ -146,7 +160,10 @@ public class Hero : Unit
         //Se actualizan las probabilidades
         Map.Instance.UpdateProbabilities(situation,skill, goForward, goBack, wait, decisionTaken);
     }
-    //----------------------------------- MÉTODOS DEL ESTADO GOFORWARD -----------------
+
+    /// <summary>
+    /// Estado de atacar al enemigo más cercano
+    /// </summary>
     private void GoForward()
     {
         Enemy enemy = GetNearestEnemy();
@@ -164,7 +181,6 @@ public class Hero : Unit
         Enemy nearestEnemy = null;
         int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
 
-        //TODO: LINQ
         foreach (Enemy enemy in Map.Instance.Enemies)
         {
             int distance = this.Pos.ManhattanDistance(enemy.Pos);
@@ -178,8 +194,9 @@ public class Hero : Unit
         return nearestEnemy;
     }
 
-    //----------------------------------- MÉTODOS DEL ESTADO GOFORWARD -----------------
-
+    /// <summary>
+    /// Estado de volver al refugio
+    /// </summary>
     private void GoBack()
     {
         //Obtenemos la posición del refugio
@@ -211,6 +228,7 @@ public class Hero : Unit
 
         CheckBattle();
     }
+
     /// <summary>
     /// Comprueba si hay batalla y la realiza
     /// </summary>

@@ -57,7 +57,7 @@ public class Tile : MonoBehaviour
                             else if (Map.Instance.Enemies.Count < GameManager.MAXENEMIES)
                                 CreateEnemy();
 
-                            //No gano nada si hay 20 enemigos y 5 aliados
+                            //No hago nada si hay 20 enemigos y 5 aliados
 
                         }
 
@@ -160,8 +160,6 @@ public class Tile : MonoBehaviour
         Map.Instance.OnMapChange();
     }
 
-
-    //TODO: HACER LA BUSQUEDA POR LINQ
 
     /// <summary>
     /// Método para eliminar un enemigo del mapa en el estado de SETMAP

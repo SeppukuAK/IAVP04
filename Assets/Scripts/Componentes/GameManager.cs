@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Jackyjjc.Bayesianet;
 
-//TODO: GENERAL, TENEMOS QUE VER SI HACEMOS UN STOPALLCORROUTINES DE TODO EL PUTO CODIGO Y ASÍ NO HAGO UN MONTON DE COMPROBACIONES DE SI HERO != NULL Y ESA VERGA
 
 /// <summary>
 /// Enumerado que controla los distintos estados del juego
@@ -57,6 +56,9 @@ public class GameManager : MonoBehaviour
     public Text ScoreGameOverText;
     public Text HeroWinText;
 
+    public GameObject ProbPanel;
+    public GameObject DecisionPanel;
+
     //------------------INSPECTOR-------------------
 
     //------------------PROPIEDADES-------------------
@@ -89,14 +91,25 @@ public class GameManager : MonoBehaviour
 
         GameOverPanel.SetActive(false);
 
-        string networkJson = (Resources.Load("barquitos") as TextAsset).text;
+        string networkJson = (Resources.Load("barcos_json") as TextAsset).text;
         VariableElimination = new VariableElimination(new BayesianJsonParser().Parse(networkJson));
+
+        ProbPanel.SetActive(false);
+        DecisionPanel.SetActive(false);
 
     }
 
     void Start()
     {
         State = SceneState.SETHERO;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown("escape"))    
+            Application.Quit(); 
+        
+
     }
 
     /// <summary>
@@ -108,6 +121,9 @@ public class GameManager : MonoBehaviour
         //Cambio de estado
         State = SceneState.PLAY;
         ButtonPlay.gameObject.SetActive(false);
+
+        ProbPanel.SetActive(true);
+        DecisionPanel.SetActive(true);
 
         //Empieza la corrutina de juego
         StartCoroutine(Map.Instance.OnTurn());
@@ -131,8 +147,6 @@ public class GameManager : MonoBehaviour
             HeroWinText.text = "El héroe ha vencido";
         else
             HeroWinText.text = "El héroe ha muerto";
-
-
 
     }
 

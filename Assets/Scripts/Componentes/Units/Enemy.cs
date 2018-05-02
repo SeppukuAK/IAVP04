@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using DG.Tweening;
-
+using System.Linq;
 /// <summary>
 /// Hijo de unidad
 /// </summary>
 public class Enemy : Unit
 {
-
+    /// <summary>
+    /// Booleana que determina si tenemos que eliminar a este enemigo porque ha muerto al combatir
+    /// </summary>
     public bool DestroyThisEnemy { get; set; }
 
     /// <summary>
@@ -31,9 +33,6 @@ public class Enemy : Unit
         {
             //Calcular la siguiente mejor posición
             Pos nextPos = NextBestPos(ally.Pos);
-
-            //TODO: COMPROBAR SI SE PUEDE QUITAR NEXTPOS!=NULL
-            //Caso en el que el barco enemigo no coincide con con un aliado
 
             //Decrementar el número de enemigos del mapa
             Map.Instance.Matrix[Pos.Y, Pos.X].NumEnemies--;
@@ -60,10 +59,11 @@ public class Enemy : Unit
     /// <returns></returns>
     public Unit GetNearestAlly()
     {
-        Unit nearestAlly = null;
+        Unit nearestAlly = null; ;
+
         int minDistance = GameManager.WIDTH + GameManager.HEIGHT;
 
-        //TODO: LINQ
+
         foreach (Unit ally in Map.Instance.Allies)
         {
             int distance = this.Pos.ManhattanDistance(ally.Pos);
@@ -76,7 +76,7 @@ public class Enemy : Unit
         }
 
         //Si está el heroe y es el más cercano, se dirige hacia él
-        if (Map.Instance.Hero != null)//TODO: COMPROBAR QUE ESTO ES CORRECTO
+        if (Map.Instance.Hero != null)
         {
             int distanceToHero = Map.Instance.Hero.Pos.ManhattanDistance(this.Pos);
 

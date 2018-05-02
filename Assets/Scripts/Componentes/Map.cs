@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// TODO: UN MEJOR COMENTARIO
 /// Guarda toda la información del mapa: Tiles, Unidades y Luz
 /// </summary>
 public class Map : MonoBehaviour
@@ -58,7 +57,7 @@ public class Map : MonoBehaviour
     public List<Enemy> Enemies { get; set; }
 
     /// <summary>
-    /// Probabilidad de victoria por parte de los aliados feministas :) mmmmmmmmmhhhhhhhhhhhhhhhggghghhhgughputanmmtequieroooasdmsdmmmmm
+    /// Probabilidad de victoria por parte de los aliados
     /// </summary>
     public float WinRate { get; set; }
 
