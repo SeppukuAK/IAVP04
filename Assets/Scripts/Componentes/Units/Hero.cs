@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using DG.Tweening;
 using Jackyjjc.Bayesianet;
+
 
 /// <summary>
 /// Hijo de Aliado
@@ -8,7 +10,6 @@ using Jackyjjc.Bayesianet;
 public class Hero : Unit
 {
     public enum HeroState { GOFORWARD, GOBACK, WAIT }
-
 
     private HeroState heroState;
     /// <summary>
@@ -37,25 +38,25 @@ public class Hero : Unit
                 break;
 
         }
+
+        
     }
 
     private void MakeDecision()
     {
         VariableElimination ve = GameManager.Instance.VariableElimination;
 
-        BayesianNetwork network = ve.GetNetwork();
+        // Observaciones Situación
+        List<string> observationsSituation = new List<string> {
+            "enemies=" + Map.Instance.GetEnemyAmount(),
+            "allies=" + Map.Instance.GetAlliesAmount()          
+        };
 
-        //Obtenemos referencia a todas las proposiciones y las crea con los valores observables
-        Proposition enemyProp = network.FindNode("enemies").Instantiate(Map.Instance.GetEnemyAmount());
-        Proposition alliesProp = network.FindNode("allies").Instantiate(Map.Instance.GetAlliesAmount());
-        Proposition lightProp = network.FindNode("light").Instantiate(Map.Instance.GetLight());
-
-        //INFERIMOS LA SITUACIÓN
-        BayesianNode situationNode = ve.GetNetwork().FindNode("situation");
-        double[] situationDistribution = ve.Infer(situationNode,enemyProp, alliesProp);
+        // Distribucion de la situacion
+        double[] situationDistribution = ve.Infer("situation", observationsSituation);
 
         string situation;
-
+        
         switch (ve.PickOne(situationDistribution))
         {
             case 0:
@@ -69,12 +70,15 @@ public class Hero : Unit
                 break;
         }
 
-        //Obtenemos la referencia a la proposición creada
-        Proposition situationProp = network.FindNode("situation").Instantiate(situation);
+        // Observaciones Destreza
+        List<string> observationsSkill = new List<string> {
+            "light=" + Map.Instance.GetLight(),
+            "allies=" + Map.Instance.GetAlliesAmount()
+        };
 
-        //INFERIMOS LA DESTREZA
-        BayesianNode skillNode = ve.GetNetwork().FindNode("skill");
-        double[] skillDistribution = ve.Infer(skillNode, lightProp, alliesProp);
+
+        //Distribución de la destreza
+        double[] skillDistribution = ve.Infer("skill", observationsSkill);
 
         string skill;
 
@@ -91,25 +95,56 @@ public class Hero : Unit
                 break;
         }
 
-        //Obtenemos la referencia a la proposición creada
-        Proposition skillProp = network.FindNode("skill").Instantiate(skill);
+        // Observaciones Destreza
+        List<string> observationsState = new List<string> {
+            "situation=" + situation,
+            "skill=" + skill,
+            "action=go_forward"
+        };
 
-        //INFERIMOS LA ACCION
-        BayesianNode actionNode = ve.GetNetwork().FindNode("action");
-        double[] actionDistribution = ve.Infer(actionNode, enemyProp,alliesProp,lightProp,situationProp,skillProp);
+        //Se infiere el estado de avance
+        double[] goForwardDist = ve.Infer("utility", observationsState);
 
-        switch (ve.PickOne(skillDistribution))
+        observationsState[2] = "action=go_back";
+
+        //Calculamos la distribución
+        double[] goBackDist = ve.Infer("utility", observationsState);
+
+        //Cambiamos el estado a esperar
+        observationsState[2] = "action=wait";
+
+
+        // Calculamos la distribución
+        double[] waitDist = ve.Infer("utility", observationsState);
+
+        double goForward = goForwardDist[0] * 1.0 + goForwardDist[1] * 0.7 + goForwardDist[2] * 0.0;
+        double goBack = goBackDist[0] * 1.0 + goBackDist[1] * 0.7 + goBackDist[2] * 0.0;
+        double wait = waitDist[0] * 1.0 + waitDist[1] * 0.7 + waitDist[2] * 0.0;
+
+        //Hallamos el máximo entre las utilidades
+        double decision = System.Math.Max(goForward, goBack);
+        decision = System.Math.Max(decision, wait);
+
+        string decisionTaken;//string para el canvas
+
+        if (goForward == decision)
         {
-            case 0:
-                heroState = HeroState.GOFORWARD;
-                break;
-            case 1:
-                heroState = HeroState.GOBACK;
-                break;
-            default:
-                heroState = HeroState.WAIT;
-                break;
+            heroState = HeroState.GOFORWARD;
+            decisionTaken = "Avanzar";
         }
+        else if (goBack == decision)
+        {
+            heroState = HeroState.GOBACK;
+            decisionTaken = "Retroceder";
+        }
+        else
+        {
+            heroState = HeroState.WAIT;
+            decisionTaken = "Esperar";
+        }
+           
+        //Se actualizan las probabilidades
+        Map.Instance.UpdateProbabilities(situation,skill, goForward, goBack, wait, decisionTaken);
     }
     //----------------------------------- MÉTODOS DEL ESTADO GOFORWARD -----------------
     private void GoForward()

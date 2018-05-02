@@ -31,6 +31,12 @@ public class Map : MonoBehaviour
     public Text EnemiesKilledByAlliesText;
     public Text EnemiesKilledByHeroText;
 
+    //Estadísticas de las probabilidades
+    public Text SituationText;
+    public Text SkillText;
+    public Text ActionDistributionText;
+    public Text DecisionTaken;
+
 
     public GameObject StatsPanel;
     //--------------INSPECTOR--------------------
@@ -244,7 +250,26 @@ public class Map : MonoBehaviour
         //Número de enemigos matados por el héroe
         EnemiesKilledByHeroText.text = "Enemigos matados por el héroe: " + NumEnemiesKilledByHero;
 
+    }
 
+    /// <summary>
+    /// Método que actualiza las probabilidades
+    /// Se actualiza cada turno
+    /// </summary>
+    public void UpdateProbabilities(string situation, string skill, double goForward, double goBack, double wait, string decisionTaken)
+    {
+        //Estadísticas situación
+        SituationText.text = "Situación: " + situation;
+
+        //Estadísticas skill
+        SkillText.text = "Destreza: " + skill;
+
+        //Distribuciones de las acciones
+        ActionDistributionText.text = string.Format("Avanzar: {0}\t\tRetroceder: {1}\nEsperar: {2}",
+            goForward, goBack, wait);
+
+        //Acción elegida
+        DecisionTaken.text = "El héroe ha decidido " + decisionTaken;
 
     }
 
@@ -260,10 +285,7 @@ public class Map : MonoBehaviour
 
 
 
-
-
-
-    //BAYESIANA
+    //-------------------------------------------------------------- RED BAYESIANA -------------------------------------------------------------
 
     /// <summary>
     /// Devuelve un String con la cantidad de enemigos
@@ -312,6 +334,8 @@ public class Map : MonoBehaviour
         else
             return "no";
     }
+    //-------------------------------------------------------------- RED BAYESIANA -------------------------------------------------------------
+
 }
 
 
